@@ -34,6 +34,7 @@ public class Feature implements Serializable {
 	private double sentimentNegetiv;
 	private double sentimentPositiv;
 	private double fleshReadingScore;
+	private double quotesRatio;
 
 	/**
 	 * @return the paragraphCount
@@ -309,6 +310,14 @@ public class Feature implements Serializable {
 	public void setFleshReadingScore(double fleshReadingScore) {
 		this.fleshReadingScore = fleshReadingScore;
 	}
+	
+	public double getQuotesRatio() {
+		return quotesRatio;
+	}
+
+	public void setQuotesRatio(double quotesRatio) {
+		this.quotesRatio = quotesRatio;
+	}
 
 	@Override
 	public String toString() {
@@ -320,7 +329,7 @@ public class Feature implements Serializable {
 				+ semiColonRatio + ", hyphenRatio=" + hyphenRatio + ", interjectionRatio=" + interjectionRatio
 				+ ", conjunctionPunctuationRatio=" + conjunctionPunctuationRatio + ", averageSentenceLength="
 				+ averageSentenceLength + ", conversationRatio=" + conversationRatio + ", sentimentNeutral="
-				+ sentimentNeutral + ", sentimentNegetiv=" + sentimentNegetiv + ", sentimentPositiv=" + sentimentPositiv
+				+ sentimentNeutral + ", sentimentNegetiv=" + sentimentNegetiv + ", sentimentPositiv=" + sentimentPositiv + "quotes=" + quotesRatio
 				+ ", fleshReadingScore=" + fleshReadingScore + "]";
 	}
 

@@ -20,8 +20,14 @@ public class StanfordPipeline {
 			return pipeline;
 
 		Properties properties = new Properties();
-		if (annotations == null)
+		if (annotations == null) {
 			properties.put(FRConstants.STNFRD_ANNOTATOR, FRConstants.STNFRD_LEMMA_ANNOTATIONS);
+		}
+//		else if(annotations.equals(FRConstants.STNFRD_QUOTE_ANNOTATIONS)) {
+//			properties.put(FRConstants.STNFRD_ANNOTATOR, FRConstants.STNFRD_QUOTE_ANNOTATIONS);
+//    		properties.put("ner.applyFineGrained", "false");
+//    		//properties.put("parse.model", "edu/stanford/nlp/models/srparser/englishSR.ser.gz");			
+//		}
 		else
 			properties.put(FRConstants.STNFRD_ANNOTATOR, annotations);
 		properties.put("ner.useSUTime", "false ");

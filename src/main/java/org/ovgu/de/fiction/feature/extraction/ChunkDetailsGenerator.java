@@ -5,8 +5,10 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
@@ -25,6 +27,7 @@ import org.ovgu.de.fiction.utils.StanfordPipeline;
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.neural.rnn.RNNCoreAnnotations;
 import edu.stanford.nlp.pipeline.Annotation;
+import edu.stanford.nlp.pipeline.QuoteAttributionAnnotator;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.sentiment.SentimentCoreAnnotations.SentimentAnnotatedTree;
 import edu.stanford.nlp.trees.Tree;
@@ -46,6 +49,7 @@ public class ChunkDetailsGenerator {
 	private int NUM_OF_CHARS_PER_BOOK = -1;
 	private String CONTENT_EXTRCT_FOLDER;
 	StanfordCoreNLP SENTI_PIPELINE;
+	StanfordCoreNLP QUOTE_PIPELINE;
 
 	protected void init() throws NumberFormatException, IOException {
 
@@ -60,6 +64,8 @@ public class ChunkDetailsGenerator {
 		TIME = System.currentTimeMillis();
 
 		SENTI_PIPELINE = StanfordPipeline.getPipeline(FRConstants.STNFRD_SENTI_ANNOTATIONS);
+		
+		QUOTE_PIPELINE = StanfordPipeline.getPipeline(FRConstants.STNFRD_QUOTE_ANNOTATIONS);
 
 	}
 
@@ -126,6 +132,7 @@ public class ChunkDetailsGenerator {
 		int batchNumber;
 		List<Chunk> chunksList = new ArrayList<>();
 		Annotation annotation = null;
+		//Annotation quoteAnnotation = null;
 
 		WordAttributeGenerator wag = new WordAttributeGenerator();
 		FeatureExtractorUtility feu = new FeatureExtractorUtility();
@@ -147,7 +154,8 @@ public class ChunkDetailsGenerator {
 
 		List<Word> wordList = cncpt.getWords();
 		int numOfSntncPerBook  = cncpt.getNumOfSentencesPerBook();
-
+		LOG.info(cncpt.getNumOfSentencesPerBook());
+		//System.exit(0);
 		// String fileName =
 		// Paths.get(path).getFileName().toString().replace(Constants.CONTENT_FILE, Constants.NONE);
 
@@ -184,6 +192,14 @@ public class ChunkDetailsGenerator {
 		double totalNumOfRandomSntnPerChunk =0; // sentiment_calculated_over_these_randm_sentences_per_chunk
 		
 		
+		Properties properties = new Properties();
+        properties.setProperty("annotators", "tokenize,ssplit,pos,lemma,ner,depparse,coref,entitymentions,quote");
+        properties.put("ner.useSUTime", "false ");
+        properties.put("ner.applyNumericClassifiers", "false");
+		properties.put("ner.applyFineGrained", "false");
+		properties.put("parse.model", "edu/stanford/nlp/models/srparser/englishSR.ser.gz");
+		StanfordCoreNLP pipelinee = new StanfordCoreNLP(properties);
+	
 		if(batchNumber==0) //very_small_book
 			totalNumOfRandomSntnPerChunk =  (FRConstants.PERCTG_OF_SNTNC_FOR_SENTIM * numOfSntncPerBook);
 		else
@@ -216,17 +232,32 @@ public class ChunkDetailsGenerator {
 			int numOfSyllables = 0;
 			int randomSntnCount =0;
 			StringBuffer sentenceSbf = new StringBuffer();
+			List<String> sentencesList = new ArrayList<String>();
+			StringBuffer quoteSentenceSbf = new StringBuffer();
+			int noOfQuotes=0;
+			int noOfI=0;
+			Set<String> speakersSet = new HashSet<String>();
 
 			for (int index = 0; index < chunkSize; index++) {// loop_over_tokens_of_a_given_chunk
 				Word token = wordList.get(wordcntr);
 				String l = token.getLemma();
 
+				
 				if (l.equals(FRConstants.P_TAG)) {
+					LOG.info("sentence" + quoteSentenceSbf.toString());
+					sentencesList.add(quoteSentenceSbf.toString());
+					quoteSentenceSbf = new StringBuffer();
 					paragraphCount++;
 					wordcntr++;
 					index--;
 					continue;
 				}
+				else{
+					if(!l.equals(FRConstants.S_TAG)) {
+					quoteSentenceSbf.append(" ").append(token.getOriginal());
+					}
+				}
+				
 				if (l.equals(FRConstants.S_TAG)) {
 					/**
 					 * calculate sentiment for the previous formed sentence,
@@ -260,6 +291,8 @@ public class ChunkDetailsGenerator {
 						
 						randomSntnCount++;
 					}
+					
+					//cncpt.setNumOfQuotesPerBook(numOfQuotes);
 					// reset the sentence buffer for next sentence
 					sentenceSbf = new StringBuffer();
 
@@ -341,7 +374,77 @@ public class ChunkDetailsGenerator {
 				wordcntr++;
 				wordCountPerSntnc++;
 			}
+			
+				
+			for(String sentence : sentencesList) {
+				if(sentence.toString().stripLeading().startsWith("\"")) {
+					LOG.info("quoteSentence " + sentence.toString());
+					//quoteAnnotation = QUOTE_PIPELINE.process(sentenceSbf.toString());
+					Annotation quoteAnnotation = new Annotation(sentence);
+					pipelinee.annotate(quoteAnnotation);
+					
+					List<CoreMap> quotes = quoteAnnotation.get(CoreAnnotations.QuotationsAnnotation.class);
+					if(quotes!= null && !quotes.isEmpty()) {
+						for(CoreMap quote : quotes) {
+						noOfQuotes++;
+						LOG.info("quote-----" + quote);
+						String speaker = quote.get(QuoteAttributionAnnotator.SpeakerAnnotation.class);
+						LOG.info("speaker-----" + speaker);
+						if(speaker != null && !speaker.isEmpty()) {
+							//noOfSpeakers++;
+							speaker = speaker.strip().toLowerCase();
+							if(speaker.length() <= 10) {
+								speakersSet.add(speaker.toLowerCase());
+							}
+							if(speaker.toLowerCase().equals("i")) {
+								noOfI++;
+							}
+						}
+						
+						String sentenceAfterQuote = sentence.substring((quote.toString().length()+1));
+						LOG.info("after-----" + sentenceAfterQuote);
+						if(speaker == null && sentenceAfterQuote !=null && sentenceAfterQuote.contains("said")) {
+							String said ="";
+							if(sentenceAfterQuote.contains(".") && !sentenceAfterQuote.contains(",")) {
+								said = sentenceAfterQuote.substring(0, sentenceAfterQuote.indexOf("."));
+							}
+							if(sentenceAfterQuote.contains(",") && !sentenceAfterQuote.contains(".")) {
+								said = sentenceAfterQuote.substring(0, sentenceAfterQuote.indexOf(","));
+							}
+							if(sentenceAfterQuote.contains(",") && sentenceAfterQuote.contains(".")) {
+								if(sentenceAfterQuote.indexOf(".") < sentenceAfterQuote.indexOf(",")) {
+									said = sentenceAfterQuote.substring(0, sentenceAfterQuote.indexOf("."));
+								}
+								else {
+									said = sentenceAfterQuote.substring(0, sentenceAfterQuote.indexOf(","));
+								}								
+							}
+							String speaker2 = said.strip().replace("said", "").toLowerCase();
+							LOG.info("speaker 2 -----" + speaker2);
+							if(speaker2!=null && !speaker2.isEmpty() && speaker2.length() <= 10) {
+								speakersSet.add(speaker2);
+								if(speaker2.strip().equals("i")) {
+									noOfI++;
+								}
+							}
+						}
+						LOG.info("canonical-----" + quote.get(QuoteAttributionAnnotator.CanonicalMentionAnnotation.class));
+						
+						String mentionType = quote.get(QuoteAttributionAnnotator.MentionTypeAnnotation.class);
+						LOG.info("mentionType-----" + mentionType);
+						String mention = quote.get(QuoteAttributionAnnotator.MentionAnnotation.class);
+						LOG.info("mention-----" + mention);
+						if(speaker!= null && !speaker.equals(mention)){
+							
+						}
+						}
+					}
+				}
+			}
+			
 			addToWordCountMap(raw, wordCountPerSntncMap, wordCountPerSntnc);
+			
+			LOG.info(" no of quotes "+ noOfQuotes + "---" + sentenceCount + "---" + speakersSet.size() + "---" + noOfI);
 
 			Chunk chunk = new Chunk();
 			chunk.setChunkNo(chunkNo);
@@ -357,7 +460,7 @@ public class ChunkDetailsGenerator {
 			Feature feature = feu.generateFeature(chunkNo, paragraphCount, sentenceCount, raw, null, stpwrdPuncRmvd, malePrpPosPronounCount,
 					femalePrpPosPronounCount, personalPronounCount, possPronounCount, locativePrepositionCount, coordConj, commaCount,
 					periodCount, colonCount, semiColonCount, hyphenCount, intrjctnCount, convCount, wordCountPerSntncMap, senti_negetiv_cnt,
-					senti_positiv_cnt, senti_neutral_cnt, properWordCount, numOfSyllables);
+					senti_positiv_cnt, senti_neutral_cnt, properWordCount, numOfSyllables,noOfQuotes);
 			chunk.setFeature(feature);
 			chunksList.add(chunk);
 			chunkNo++;

@@ -25,7 +25,7 @@ public class FictionRetrievalDriver {
 		long start = System.currentTimeMillis();
 
 		/* 1> Extract content from Gutenberg corpus - one time */
-		ContentExtractor.generateContentFromAllEpubs();
+		//ContentExtractor.generateContentFromAllEpubs();
 		System.out.println("Time taken for generating content (min)-" + (System.currentTimeMillis() - start) / (1000 * 60));
 
 		start = System.currentTimeMillis();
@@ -35,12 +35,12 @@ public class FictionRetrievalDriver {
 		start = System.currentTimeMillis();
 
 		/* 3> Write features to CSV - one time */
-		//FeatureExtractorUtility.writeFeaturesToCsv(features);
+		FeatureExtractorUtility.writeFeaturesToCsv(features);
 		 start = System.currentTimeMillis();
 		System.out.println("Time taken for writing to CSV (min)-" + (System.currentTimeMillis() - start) / (1000 * 60));
 		
 		/* 4> Query */
-		String qryBookNum = "pg1400DickensGreatExp"; //pg11CarolAlice,  pg1400DickensGreatExp,pg766DickensDavidCopfld
+		String qryBookNum = "pg1400"; //pg11CarolAlice,  pg1400DickensGreatExp,pg766DickensDavidCopfld
 														 // pg2701HermanMobyDick,pg537DoyleTerrorTales
 		// pg13720HermanVoyage1, pg2911Galsw2, pg1155Agatha2,pg2852DoyleHound, pg2097DoyleSignFour
 
