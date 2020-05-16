@@ -8,6 +8,7 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import org.ovgu.de.fiction.model.BookDetails;
@@ -79,7 +80,7 @@ public class FeatureExtractorUtility {
 			double possPronounCount, double locativePrepositionCount, double coordConj, double commaCount, double periodCount,
 			double colonCount, double semiColonCount, double hyphenCount, double intrjctnCount, double quoteCount,
 			Map<Integer, Integer> wordCountList, int senti_negetiv, int senti_positiv, int senti_neutral, int properWordCount,
-			int numOfSyllables,int noOfQuotes) {
+			int numOfSyllables,int noOfQuotes, int noOfSpeakers) {
 
 		Feature feature = new Feature();
 
@@ -119,6 +120,7 @@ public class FeatureExtractorUtility {
 		}
 		feature.setAverageSentenceLength(new Double(product) / new Double(count));
 		feature.setQuotesRatio(noOfQuotes);
+		feature.setNoOfSpeakers(noOfSpeakers);
 		return feature;
 	}
 
@@ -224,6 +226,7 @@ public class FeatureExtractorUtility {
 				RUNNINGSUM_TTR = RUNNINGSUM_TTR+feature_array[FRConstants.TTR_21];
 				
 				feature_array[FRConstants.QUOTES_RATIO_22] = feature.getQuotesRatio();
+				feature_array[FRConstants.NUM_SPEAKERS_23] = feature.getNoOfSpeakers();
 				
 				// add each "doc" and its feature vector array
 				corpus.put(bookId + "-" + chunk.getChunkNo(), feature_array);
@@ -263,22 +266,27 @@ public class FeatureExtractorUtility {
 					if (j != feature_vector.length - 1) {// for all Feature vector's -'j'th-element F1, F2..except last index
 						if (j == FRConstants.SENTENCE_L_14) {// normalize Avg. Sentence Length ,
 																// 14th element of array
-							fileWriter.append(String.format("%.4f", Math.round(((feature_vector[j]-aVG_avg_senten_len) / (max_avg_senten_len-min_avg_senten_len)) * dummy) / dummy)+ FRConstants.COMMA);
+							fileWriter.append(String.format(Locale.ROOT, "%.4f", Math.round(((feature_vector[j]-aVG_avg_senten_len) / (max_avg_senten_len-min_avg_senten_len)) * dummy) / dummy)+ FRConstants.COMMA);
 							//fileWriter.append(String.format("%.4f", Math.round((feature_vector[j] / max_avg_senten_len) * dummy) / dummy)+ FRConstants.COMMA);
 							feature_vector[j] = Math.round((feature_vector[j] / max_avg_senten_len) * dummy) / dummy;
 						}
 						if(j == FRConstants.NUM_CHARS_20){//normlize
-							fileWriter.append(String.format("%.4f", Math.round(((feature_vector[j]-aVG_NUM_of_CHARS) / (max_NUM_of_CHARS-min_NUM_of_CHARS)) * dummy) / dummy)	+ FRConstants.COMMA);
+							fileWriter.append(String.format(Locale.ROOT, "%.4f", Math.round(((feature_vector[j]-aVG_NUM_of_CHARS) / (max_NUM_of_CHARS-min_NUM_of_CHARS)) * dummy) / dummy)	+ FRConstants.COMMA);
 							//fileWriter.append(String.format("%.4f", Math.round((feature_vector[j] / max_NUM_of_CHARS) * dummy) / dummy)	+ FRConstants.COMMA);
 							feature_vector[j] = Math.round((feature_vector[j] / max_NUM_of_CHARS) * dummy) / dummy;
 						}
-						if(j != FRConstants.NUM_CHARS_20 && j != FRConstants.SENTENCE_L_14){  // do not normalize others
-							fileWriter.append(String.format("%.4f", Math.round(feature_vector[j] * dummy) / dummy) + FRConstants.COMMA);
+						if(j != FRConstants.NUM_CHARS_20 && j != FRConstants.SENTENCE_L_14 && j != FRConstants.TTR_21){  // do not normalize others
+							fileWriter.append(String.format(Locale.ROOT, "%.4f", Math.round(feature_vector[j] * dummy) / dummy) + FRConstants.COMMA);
 						}
-					} else{// for last element, no comma!, but normalize, and then put '\n'
-						fileWriter.append(String.format("%.4f", Math.round(((feature_vector[j]-aVG_TTR)/ (max_TTR-min_TTR))* dummy) / dummy) + FRConstants.NEW_LINE);
-						//fileWriter.append(String.format("%.4f", Math.round((feature_vector[j]/ max_TTR)* dummy) / dummy) + FRConstants.NEW_LINE);
-						feature_vector[j] = Math.round((feature_vector[j] / max_TTR) * dummy) / dummy;
+						if(j == FRConstants.TTR_21) {
+							// normalize, and then put
+							fileWriter.append(String.format(Locale.ROOT, "%.4f", Math.round(((feature_vector[j]-aVG_TTR)/ (max_TTR-min_TTR))* dummy) / dummy) + FRConstants.COMMA);
+							//fileWriter.append(String.format("%.4f", Math.round((feature_vector[j]/ max_TTR)* dummy) / dummy) + FRConstants.NEW_LINE);
+							feature_vector[j] = Math.round((feature_vector[j] / max_TTR) * dummy) / dummy;							
+						}
+					} else{
+						// for last element, no comma!,
+						fileWriter.append(String.format(Locale.ROOT, "%.4f", Math.round((feature_vector[j]) *dummy) / dummy) + FRConstants.NEW_LINE);
 					}
 				}
 				corpus_normalized.put(chunk_features.getKey(), feature_vector);

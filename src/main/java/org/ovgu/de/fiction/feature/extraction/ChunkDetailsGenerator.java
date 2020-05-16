@@ -428,15 +428,15 @@ public class ChunkDetailsGenerator {
 								}
 							}
 						}
-						LOG.info("canonical-----" + quote.get(QuoteAttributionAnnotator.CanonicalMentionAnnotation.class));
+						//LOG.info("canonical-----" + quote.get(QuoteAttributionAnnotator.CanonicalMentionAnnotation.class));
 						
-						String mentionType = quote.get(QuoteAttributionAnnotator.MentionTypeAnnotation.class);
-						LOG.info("mentionType-----" + mentionType);
-						String mention = quote.get(QuoteAttributionAnnotator.MentionAnnotation.class);
-						LOG.info("mention-----" + mention);
-						if(speaker!= null && !speaker.equals(mention)){
-							
-						}
+						//String mentionType = quote.get(QuoteAttributionAnnotator.MentionTypeAnnotation.class);
+						//LOG.info("mentionType-----" + mentionType);
+						//String mention = quote.get(QuoteAttributionAnnotator.MentionAnnotation.class);
+						//LOG.info("mention-----" + mention);
+//						if(speaker!= null && !speaker.equals(mention)){
+//							
+//						}
 						}
 					}
 				}
@@ -460,7 +460,7 @@ public class ChunkDetailsGenerator {
 			Feature feature = feu.generateFeature(chunkNo, paragraphCount, sentenceCount, raw, null, stpwrdPuncRmvd, malePrpPosPronounCount,
 					femalePrpPosPronounCount, personalPronounCount, possPronounCount, locativePrepositionCount, coordConj, commaCount,
 					periodCount, colonCount, semiColonCount, hyphenCount, intrjctnCount, convCount, wordCountPerSntncMap, senti_negetiv_cnt,
-					senti_positiv_cnt, senti_neutral_cnt, properWordCount, numOfSyllables,noOfQuotes);
+					senti_positiv_cnt, senti_neutral_cnt, properWordCount, numOfSyllables, noOfQuotes, speakersSet.size());
 			chunk.setFeature(feature);
 			chunksList.add(chunk);
 			chunkNo++;
