@@ -339,7 +339,7 @@ public class Feature implements Serializable {
 				+ ", conjunctionPunctuationRatio=" + conjunctionPunctuationRatio + ", averageSentenceLength="
 				+ averageSentenceLength + ", conversationRatio=" + conversationRatio + ", sentimentNeutral="
 				+ sentimentNeutral + ", sentimentNegetiv=" + sentimentNegetiv + ", sentimentPositiv=" 
-				+ sentimentPositiv + "quotes=" + quotesRatio + "noOfSpeakers=" + noOfSpeakers
+				+ sentimentPositiv + ", quotes=" + quotesRatio + ", noOfSpeakers=" + noOfSpeakers 				
 				+ ", fleshReadingScore=" + fleshReadingScore + "]";
 	}	
 

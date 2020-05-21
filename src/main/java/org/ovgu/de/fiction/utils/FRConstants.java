@@ -116,9 +116,9 @@ public interface FRConstants {
 	
 	public static final String QUOTATION = "\"";
 
-	public static final String FILE_HEADER = "bookId-chunkNo,F0,F1,F2,F3,F4,F5,F6,F7,F8,F9,F10,F11,F12,F13,F14,F15,F16,F17,F18,F19,F20,F21,F22,F23";
+	public static final String FILE_HEADER = "bookId-chunkNo,F0,F1,F2,F3,F4,F5,F6,F7,F8,F9,F10,F11,F12,F13,F14,F15,F16,F17,F18,F19,F20,F21,F22,F23,F24";
 
-	public static final String FILE_HEADER_RES_CSV = "bookId_RowNum,F0,F1,F2,F3,F4,F5,F6,F7,F8,F9,F10,F11,F12,F13,F14,F15,F16,F17,F18,F19,F20,F21,F22,F23,Class";
+	public static final String FILE_HEADER_RES_CSV = "bookId_RowNum,F0,F1,F2,F3,F4,F5,F6,F7,F8,F9,F10,F11,F12,F13,F14,F15,F16,F17,F18,F19,F20,F21,F22,F23,F24,Class";
 	
 	public static final String COORD_CONJUNCTION = "CC";
 
@@ -166,7 +166,7 @@ public interface FRConstants {
 	public static final String SIMI_EXCLUDE_TTR_NUMCHARS="EX";
 
 	public static final double SIMILARITY_CUTOFF = 0.70;
-	public static final int FEATURE_NUMBER = 24;
+	public static final int FEATURE_NUMBER = 25;
 	public static final int FEATURE_NUMBER_GLOBAL = 3;
 	public static final double FEATURE_WEIGHT_MORE = 0.85;
 	public static final double FEATURE_WEIGHT_LESS = 0.10;
@@ -190,7 +190,9 @@ public interface FRConstants {
 	public static final int TOP_K_RESULTS = 25;
 
 	/* feature related */
-	public static final int LEAVE_LAST_K_ELEMENTS_OF_FEATURE = 2; //exclude 2 global elements (TTR, NUM_Chars) from
+	public static final int LEAVE_LAST_K_ELEMENTS_OF_FEATURE = 3; //exclude 2 global elements (TTR, NUM_Chars, Protagonist) from
+	
+	public static final int PROTAGONIST_24 = 24;
 	
 	public static final int NUM_SPEAKERS_23 = 23;
 	

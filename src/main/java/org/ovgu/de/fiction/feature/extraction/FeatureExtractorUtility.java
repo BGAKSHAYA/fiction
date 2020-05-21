@@ -80,7 +80,7 @@ public class FeatureExtractorUtility {
 			double possPronounCount, double locativePrepositionCount, double coordConj, double commaCount, double periodCount,
 			double colonCount, double semiColonCount, double hyphenCount, double intrjctnCount, double quoteCount,
 			Map<Integer, Integer> wordCountList, int senti_negetiv, int senti_positiv, int senti_neutral, int properWordCount,
-			int numOfSyllables,int noOfQuotes, int noOfSpeakers) {
+			int numOfSyllables,double noOfQuotes, int noOfSpeakers) {
 
 		Feature feature = new Feature();
 
@@ -119,7 +119,7 @@ public class FeatureExtractorUtility {
 			product += key * wordCountList.get(key);
 		}
 		feature.setAverageSentenceLength(new Double(product) / new Double(count));
-		feature.setQuotesRatio(noOfQuotes);
+		feature.setQuotesRatio(noOfQuotes / sentenceCount);
 		feature.setNoOfSpeakers(noOfSpeakers);
 		return feature;
 	}
@@ -227,6 +227,7 @@ public class FeatureExtractorUtility {
 				
 				feature_array[FRConstants.QUOTES_RATIO_22] = feature.getQuotesRatio();
 				feature_array[FRConstants.NUM_SPEAKERS_23] = feature.getNoOfSpeakers();
+				feature_array[FRConstants.PROTAGONIST_24] = feature.getNoOfSpeakers();
 				
 				// add each "doc" and its feature vector array
 				corpus.put(bookId + "-" + chunk.getChunkNo(), feature_array);

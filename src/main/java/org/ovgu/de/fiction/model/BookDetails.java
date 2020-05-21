@@ -23,6 +23,7 @@ public class BookDetails implements Serializable {
 	
 	private int numOfChars; // added by Sayantan, at Book level
 
+	private int foundProtagonist;
 	
 	/**
 	 * @param bookId
@@ -30,13 +31,14 @@ public class BookDetails implements Serializable {
 	 * @param metadata
 	 * @param feature
 	 */
-	public BookDetails(String bookId, List<Chunk> chunks, Metadata metadata, String content, int numOfChars) {
+	public BookDetails(String bookId, List<Chunk> chunks, Metadata metadata, String content, int numOfChars, int foundProtagonist) {
 		super();
 		this.bookId = bookId;
 		this.chunks = chunks;
 		this.metadata = metadata;
 		this.content = content;
 		this.numOfChars = numOfChars;
+		this.setFoundProtagonist(foundProtagonist);
 	}
 
 	/**
@@ -131,6 +133,8 @@ public class BookDetails implements Serializable {
 		this.numOfChars = numOfChars;
 	}
 
+
+
 	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Object#toString()
@@ -139,6 +143,14 @@ public class BookDetails implements Serializable {
 	public String toString() {
 		return "Book [bookId=" + bookId + " having " + chunks.size() + " chunks => " + chunks + ", metadata=" + metadata.getFirstTitle()
 				+ ", averageTTR=" + averageTTR + ", num of Chars="+numOfChars+ "]";
+	}
+
+	public int getFoundProtagonist() {
+		return foundProtagonist;
+	}
+
+	public void setFoundProtagonist(int foundProtagonist) {
+		this.foundProtagonist = foundProtagonist;
 	}
 
 }

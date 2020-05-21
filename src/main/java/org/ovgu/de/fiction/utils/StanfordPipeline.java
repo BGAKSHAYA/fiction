@@ -28,10 +28,10 @@ public class StanfordPipeline {
 //    		properties.put("ner.applyFineGrained", "false");
 //    		//properties.put("parse.model", "edu/stanford/nlp/models/srparser/englishSR.ser.gz");			
 //		}
-//		else if(annotations.equals(FRConstants.STNFRD_COREF_ANNOTATIONS)) {
-//			properties.put(FRConstants.STNFRD_ANNOTATOR, FRConstants.STNFRD_COREF_ANNOTATIONS);
-//			properties.put("ner.applyFineGrained", "false");			
-//		}
+		else if(annotations.equals(FRConstants.STNFRD_COREF_ANNOTATIONS)) {
+			properties.put(FRConstants.STNFRD_ANNOTATOR, FRConstants.STNFRD_COREF_ANNOTATIONS);
+			properties.put("ner.applyFineGrained", "false");			
+		}
 		else
 			properties.put(FRConstants.STNFRD_ANNOTATOR, annotations);
 		properties.put("ner.useSUTime", "false ");
