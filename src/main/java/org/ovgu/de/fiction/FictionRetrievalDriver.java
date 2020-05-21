@@ -33,6 +33,8 @@ public class FictionRetrievalDriver {
 		List<BookDetails> features = generateOtherFeatureForAll();
 		System.out.println("Time taken for feature extraction and chunk generation (min)-" + (System.currentTimeMillis() - start) / (1000 * 60));
 		start = System.currentTimeMillis();
+		
+		//System.exit(0);
 
 		/* 3> Write features to CSV - one time */
 		FeatureExtractorUtility.writeFeaturesToCsv(features);

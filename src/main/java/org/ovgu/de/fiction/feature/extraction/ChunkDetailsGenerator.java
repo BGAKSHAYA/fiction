@@ -24,7 +24,14 @@ import org.ovgu.de.fiction.utils.FRFileOperationUtils;
 import org.ovgu.de.fiction.utils.FRGeneralUtils;
 import org.ovgu.de.fiction.utils.StanfordPipeline;
 
+import edu.stanford.nlp.coref.CorefCoreAnnotations;
+import edu.stanford.nlp.coref.data.CorefChain;
+import edu.stanford.nlp.coref.data.CorefChain.CorefMention;
+import edu.stanford.nlp.coref.data.Dictionaries.Gender;
+import edu.stanford.nlp.coref.data.Dictionaries.MentionType;
+import edu.stanford.nlp.ie.KBPRelationExtractor.NERTag;
 import edu.stanford.nlp.ling.CoreAnnotations;
+import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.neural.rnn.RNNCoreAnnotations;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.QuoteAttributionAnnotator;
@@ -50,6 +57,7 @@ public class ChunkDetailsGenerator {
 	private String CONTENT_EXTRCT_FOLDER;
 	StanfordCoreNLP SENTI_PIPELINE;
 	StanfordCoreNLP QUOTE_PIPELINE;
+	StanfordCoreNLP COREF_PIPELINE;
 
 	protected void init() throws NumberFormatException, IOException {
 
@@ -65,7 +73,9 @@ public class ChunkDetailsGenerator {
 
 		SENTI_PIPELINE = StanfordPipeline.getPipeline(FRConstants.STNFRD_SENTI_ANNOTATIONS);
 		
-		QUOTE_PIPELINE = StanfordPipeline.getPipeline(FRConstants.STNFRD_QUOTE_ANNOTATIONS);
+		//QUOTE_PIPELINE = StanfordPipeline.getPipeline(FRConstants.STNFRD_QUOTE_ANNOTATIONS);
+		
+		//COREF_PIPELINE = StanfordPipeline.getPipeline(FRConstants.STNFRD_COREF_ANNOTATIONS);
 
 	}
 
@@ -133,6 +143,7 @@ public class ChunkDetailsGenerator {
 		List<Chunk> chunksList = new ArrayList<>();
 		Annotation annotation = null;
 		//Annotation quoteAnnotation = null;
+		Annotation corefAnnotation = null;
 
 		WordAttributeGenerator wag = new WordAttributeGenerator();
 		FeatureExtractorUtility feu = new FeatureExtractorUtility();
@@ -191,14 +202,16 @@ public class ChunkDetailsGenerator {
 		int wordCountPerSntnc = 0;
 		double totalNumOfRandomSntnPerChunk =0; // sentiment_calculated_over_these_randm_sentences_per_chunk
 		
+		Map<String, List<Integer>> characterMap = new HashMap<>();
 		
-		Properties properties = new Properties();
-        properties.setProperty("annotators", "tokenize,ssplit,pos,lemma,ner,depparse,coref,entitymentions,quote");
-        properties.put("ner.useSUTime", "false ");
-        properties.put("ner.applyNumericClassifiers", "false");
-		properties.put("ner.applyFineGrained", "false");
-		properties.put("parse.model", "edu/stanford/nlp/models/srparser/englishSR.ser.gz");
-		StanfordCoreNLP pipelinee = new StanfordCoreNLP(properties);
+//		Properties properties = new Properties();
+//        properties.setProperty("annotators", "tokenize,ssplit,pos,lemma,ner,depparse,coref,entitymentions,quote");
+//        properties.put("ner.useSUTime", "false ");
+//        properties.put("ner.applyNumericClassifiers", "false");
+//		properties.put("ner.applyFineGrained", "false");
+//		properties.put("parse.model", "edu/stanford/nlp/models/srparser/englishSR.ser.gz");
+//		StanfordCoreNLP pipelinee = new StanfordCoreNLP(properties);
+		
 	
 		if(batchNumber==0) //very_small_book
 			totalNumOfRandomSntnPerChunk =  (FRConstants.PERCTG_OF_SNTNC_FOR_SENTIM * numOfSntncPerBook);
@@ -244,7 +257,7 @@ public class ChunkDetailsGenerator {
 
 				
 				if (l.equals(FRConstants.P_TAG)) {
-					LOG.info("sentence" + quoteSentenceSbf.toString());
+					//LOG.info("sentence" + quoteSentenceSbf.toString());
 					sentencesList.add(quoteSentenceSbf.toString());
 					quoteSentenceSbf = new StringBuffer();
 					paragraphCount++;
@@ -375,10 +388,14 @@ public class ChunkDetailsGenerator {
 				wordCountPerSntnc++;
 			}
 			
+			
 				
-			for(String sentence : sentencesList) {
-				if(sentence.toString().stripLeading().startsWith("\"")) {
-					LOG.info("quoteSentence " + sentence.toString());
+				
+				
+				
+				
+				/*if(sentence.toString().stripLeading().startsWith("\"")) {
+					//LOG.info("quoteSentence " + sentence.toString());
 					//quoteAnnotation = QUOTE_PIPELINE.process(sentenceSbf.toString());
 					Annotation quoteAnnotation = new Annotation(sentence);
 					pipelinee.annotate(quoteAnnotation);
@@ -387,9 +404,9 @@ public class ChunkDetailsGenerator {
 					if(quotes!= null && !quotes.isEmpty()) {
 						for(CoreMap quote : quotes) {
 						noOfQuotes++;
-						LOG.info("quote-----" + quote);
+						//LOG.info("quote-----" + quote);
 						String speaker = quote.get(QuoteAttributionAnnotator.SpeakerAnnotation.class);
-						LOG.info("speaker-----" + speaker);
+						//LOG.info("speaker-----" + speaker);
 						if(speaker != null && !speaker.isEmpty()) {
 							//noOfSpeakers++;
 							speaker = speaker.strip().toLowerCase();
@@ -402,7 +419,7 @@ public class ChunkDetailsGenerator {
 						}
 						
 						String sentenceAfterQuote = sentence.substring((quote.toString().length()+1));
-						LOG.info("after-----" + sentenceAfterQuote);
+						//LOG.info("after-----" + sentenceAfterQuote);
 						if(speaker == null && sentenceAfterQuote !=null && sentenceAfterQuote.contains("said")) {
 							String said ="";
 							if(sentenceAfterQuote.contains(".") && !sentenceAfterQuote.contains(",")) {
@@ -420,7 +437,7 @@ public class ChunkDetailsGenerator {
 								}								
 							}
 							String speaker2 = said.strip().replace("said", "").toLowerCase();
-							LOG.info("speaker 2 -----" + speaker2);
+							//LOG.info("speaker 2 -----" + speaker2);
 							if(speaker2!=null && !speaker2.isEmpty() && speaker2.length() <= 10) {
 								speakersSet.add(speaker2);
 								if(speaker2.strip().equals("i")) {
@@ -439,12 +456,12 @@ public class ChunkDetailsGenerator {
 //						}
 						}
 					}
-				}
+				}*/
 			}
 			
 			addToWordCountMap(raw, wordCountPerSntncMap, wordCountPerSntnc);
 			
-			LOG.info(" no of quotes "+ noOfQuotes + "---" + sentenceCount + "---" + speakersSet.size() + "---" + noOfI);
+			LOG.info(" no of quotes "+ noOfQuotes + "---" + sentenceCount + "---" + speakersSet.size() + "---" + noOfI + "ratio---" + (noOfQuotes/sentenceCount));
 
 			Chunk chunk = new Chunk();
 			chunk.setChunkNo(chunkNo);
@@ -471,8 +488,104 @@ public class ChunkDetailsGenerator {
 			paragraphCount = 0;
 
 		}
-
+		//Add to the book
+		cncpt.setDetailedCharacterMap(characterMap);
 		return chunksList;
+	}
+
+	private void processCorefChains(Annotation corefAnnotation, Map<String, List<Integer>> characterMap) {
+		// Find characters and get coreference information
+		Map<Integer, CorefChain> corefChains = corefAnnotation.get(CorefCoreAnnotations.CorefChainAnnotation.class);
+		if (corefChains == null) {
+			return;
+		}
+		List<CoreMap> sentences = corefAnnotation.get(CoreAnnotations.SentencesAnnotation.class);
+		for (Map.Entry<Integer, CorefChain> entry : corefChains.entrySet()) {
+			for (CorefChain.CorefMention mention : entry.getValue().getMentionsInTextualOrder()) {
+				List<CoreLabel> tokens = sentences.get(mention.sentNum - 1).get(CoreAnnotations.TokensAnnotation.class);
+				if (mention.mentionType.equals(MentionType.PROPER)) {
+					List<CoreLabel> sublist = tokens.subList(mention.startIndex - 1, mention.endIndex - 1);
+					if (sublist == null || sublist.isEmpty()) {
+						continue;
+					}
+					// only name present, add it to charactermap
+					String ner = null;
+					if (sublist.size() == 1) {
+						ner = sublist.get(0).get(CoreAnnotations.NamedEntityTagAnnotation.class);
+						if (isValidNer(ner)) {
+							String name = sublist.get(0).originalText().toLowerCase();
+							createCharacterMap(name, characterMap, mention);							
+						}
+					} else {
+						// multiple mentions present, check for maximum length 3, Mr Joe, others are invalid identifications
+						if(sublist.size()<=3) {
+							StringBuffer character = new StringBuffer();
+							for (CoreLabel token : sublist) {
+								if (token.get(CoreAnnotations.NamedEntityTagAnnotation.class).equals(String.valueOf(NERTag.PERSON))) {
+									character.append(token.originalText().toLowerCase() + " ");
+								}
+							}
+							createCharacterMap(character.toString().stripTrailing(), characterMap, mention);
+						}						
+					}
+				}
+				// increase the count based on clusterid
+//				else if (mention.mentionType.equals(MentionType.PRONOMINAL)) {
+//				}
+			}
+		}
+	}
+
+	private void createCharacterMap(String name, Map<String, List<Integer>> characterMap, CorefMention mention) {
+		if (characterMap.containsKey(name)) {
+			List<Integer> attributeList = characterMap.get(name);
+			// index 0 - count
+			// index 1 - corefclusterid
+			// index 2 - gender, if male=1, female=2, unknown=3
+			int count = attributeList.get(0);
+			count++;
+			attributeList.add(0, count);
+			attributeList.add(1, mention.corefClusterID);
+			if (attributeList.get(2) == 3 && (mention.gender.equals(Gender.UNKNOWN)
+					|| mention.gender.equals(Gender.NEUTRAL))) {
+				if (mention.gender.equals(Gender.FEMALE)) {
+					attributeList.add(2, 2);
+				} else {
+					attributeList.add(2, 1);
+				}
+			}
+			LOG.info("name --- " + name);
+			LOG.info("attributeList --- " + attributeList);
+			characterMap.put(name, attributeList);
+		} else {
+			addToCharacterMap(name, mention, characterMap);
+		}
+	}
+
+	private void addToCharacterMap(String name, CorefMention mention, Map<String, List<Integer>> characterMap) {
+		List<Integer> attributeList = new ArrayList<Integer>();
+		attributeList.add(0, 1);
+		attributeList.add(1, mention.corefClusterID);
+		if (mention.gender.equals(Gender.UNKNOWN) || mention.gender.equals(Gender.NEUTRAL)) {
+			attributeList.add(2, 3);
+		} else if (mention.gender.equals(Gender.FEMALE)) {
+			attributeList.add(2, 2);
+		} else {
+			attributeList.add(2, 1);
+		}
+		LOG.info("name --- " + name);
+		LOG.info("attributeList --- " + attributeList);
+		characterMap.put(name, attributeList);
+	}
+
+	private boolean isValidNer(String ner) {
+		if (ner == null) {
+			return false;
+		}
+		if (ner == String.valueOf(NERTag.PERSON) || ner.equals(FRConstants.O)) {
+			return true;
+		}
+		return false;
 	}
 
 	public void addToWordCountMap(List<Word> raw, Map<Integer, Integer> wordCountPerSntncMap, int wordCount) {

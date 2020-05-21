@@ -39,6 +39,8 @@ public interface FRConstants {
 	public static final String STNFRD_SENTI_ANNOTATIONS = "tokenize,ssplit,pos,depparse,parse,sentiment";
 	
 	public static final String STNFRD_QUOTE_ANNOTATIONS = "tokenize,ssplit,pos,lemma,ner,depparse,parse,sentiment,coref,entitymentions,quote";
+	
+	public static final String STNFRD_COREF_ANNOTATIONS = "tokenize, ssplit, pos, lemma, ner, parse, dcoref, sentiment";
 
 	public static final String STNFRD_ANNOTATOR = "annotators";
 
@@ -237,6 +239,8 @@ public interface FRConstants {
 	public static final int FEMALE_PR_1 = 1;
 	
 	public static final int PARAGRAPH_COUNT_0 = 0;
+	
+	public static final String O = "O";
 	
 
 }

@@ -6,7 +6,9 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
+import org.apache.log4j.Logger;
 import org.ovgu.de.fiction.model.Concept;
 import org.ovgu.de.fiction.model.Word;
 import org.ovgu.de.fiction.utils.FRConstants;
@@ -14,9 +16,12 @@ import org.ovgu.de.fiction.utils.FRGeneralUtils;
 import org.ovgu.de.fiction.utils.FRFileOperationUtils;
 import org.ovgu.de.fiction.utils.StanfordPipeline;
 
+import com.sun.tools.sjavac.Log;
+
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.pipeline.Annotation;
+import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.util.CoreMap;
 
 /**
@@ -24,6 +29,8 @@ import edu.stanford.nlp.util.CoreMap;
  * @version - Changes for sentiment features
  */
 public class WordAttributeGenerator {
+	
+	final static Logger LOG = Logger.getLogger(WordAttributeGenerator.class);
 
 	private static final String NNP = "NNP";
 
@@ -49,7 +56,8 @@ public class WordAttributeGenerator {
 		int numOfSyllables = 0;
 		int numOfSentences =0;
 
-		for (CoreMap sentence : sentences) { // this loop will iterate each of the sentences
+		for (CoreMap sentence : sentences) {
+			LOG.info("sentence " + sentence);// this loop will iterate each of the sentences
 			tokenList.add(new Word(FRConstants.S_TAG, FRConstants.S_TAG, null, null, 0));
 			numOfSentences++;
 			for (CoreLabel cl : sentence.get(CoreAnnotations.TokensAnnotation.class)) {// this
@@ -97,6 +105,20 @@ public class WordAttributeGenerator {
 				}
 
 			}
+			
+			Properties properties = new Properties();
+			properties.setProperty("annotators", "tokenize, ssplit, pos, lemma, ner, parse, dcoref, sentiment");
+			properties.put("ner.applyFineGrained", "false");	
+			StanfordCoreNLP pipelinee = new StanfordCoreNLP(properties);
+			
+				LOG.info("sentence" + sentence);
+				if(!sentence.isEmpty()) {
+					corefAnnotation = new Annotation(sentence);
+					pipelinee.annotate(corefAnnotation);
+					//corefAnnotation = COREF_PIPELINE.process(sentence);
+					processCorefChains(corefAnnotation, characterMap);
+				
+			
 		}
 		cncpt.setWords(tokenList);
 		cncpt.setCharacterMap(feu.getUniqueCharacterMap(charMap));
