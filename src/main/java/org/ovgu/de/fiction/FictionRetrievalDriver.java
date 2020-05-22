@@ -25,7 +25,7 @@ public class FictionRetrievalDriver {
 		long start = System.currentTimeMillis();
 
 		/* 1> Extract content from Gutenberg corpus - one time */
-		//ContentExtractor.generateContentFromAllEpubs();
+		ContentExtractor.generateContentFromAllEpubs();
 		System.out.println("Time taken for generating content (min)-" + (System.currentTimeMillis() - start) / (1000 * 60));
 
 		start = System.currentTimeMillis();
@@ -38,7 +38,7 @@ public class FictionRetrievalDriver {
 
 		/* 3> Write features to CSV - one time */
 		FeatureExtractorUtility.writeFeaturesToCsv(features);
-		 start = System.currentTimeMillis();
+		start = System.currentTimeMillis();
 		System.out.println("Time taken for writing to CSV (min)-" + (System.currentTimeMillis() - start) / (1000 * 60));
 		
 		/* 4> Query */

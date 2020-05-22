@@ -146,10 +146,12 @@ public class FeatureExtractorUtility {
 		double max_avg_senten_len = 1.00;
 		double max_TTR = 1.00;
 		double max_NUM_of_CHARS=1.00;
+		double max_NUM_of_SPEAKERS=1.00;
 
 		double min_avg_senten_len = 1.00;
 		double min_TTR = 1.00;
 		double min_NUM_of_CHARS=1.00;
+		double min_NUM_of_SPEAKERS=1.00;
 		
 		double AVG_avg_senten_len = 1.00;
 		double AVG_TTR = 1.00;
@@ -178,6 +180,7 @@ public class FeatureExtractorUtility {
 				min_avg_senten_len = feature.getAverageSentenceLength();	
 				min_NUM_of_CHARS   = book.getNumOfChars();
 				min_TTR            = book.getAverageTTR().doubleValue();
+				min_NUM_of_SPEAKERS= feature.getNoOfSpeakers();
 				}
 							
 				
@@ -226,8 +229,14 @@ public class FeatureExtractorUtility {
 				RUNNINGSUM_TTR = RUNNINGSUM_TTR+feature_array[FRConstants.TTR_21];
 				
 				feature_array[FRConstants.QUOTES_RATIO_22] = feature.getQuotesRatio();
+				
 				feature_array[FRConstants.NUM_SPEAKERS_23] = feature.getNoOfSpeakers();
-				feature_array[FRConstants.PROTAGONIST_24] = feature.getNoOfSpeakers();
+				if (max_NUM_of_SPEAKERS < feature_array[FRConstants.NUM_SPEAKERS_23])
+					max_NUM_of_SPEAKERS = feature_array[FRConstants.NUM_SPEAKERS_23]; 
+				if (min_NUM_of_SPEAKERS > feature_array[FRConstants.NUM_SPEAKERS_23])
+					min_NUM_of_SPEAKERS = feature_array[FRConstants.NUM_SPEAKERS_23]; 
+				
+				feature_array[FRConstants.PROTAGONIST_24] = book.getFoundProtagonist();
 				
 				// add each "doc" and its feature vector array
 				corpus.put(bookId + "-" + chunk.getChunkNo(), feature_array);
@@ -239,11 +248,11 @@ public class FeatureExtractorUtility {
 		AVG_TTR = RUNNINGSUM_TTR/row_count;
 		
 		// Note: corpus is now normalized, and the same is written into csv file
-		write(corpus, max_avg_senten_len,max_NUM_of_CHARS,max_TTR, min_avg_senten_len,min_NUM_of_CHARS,min_TTR,AVG_avg_senten_len,AVG_NUM_of_CHARS,AVG_TTR);
+		write(corpus, max_avg_senten_len,max_NUM_of_CHARS,max_TTR, min_avg_senten_len,min_NUM_of_CHARS,min_TTR,AVG_avg_senten_len,AVG_NUM_of_CHARS,AVG_TTR, min_NUM_of_SPEAKERS, max_NUM_of_SPEAKERS);
 
 	}
 
-	private static Map<String, double[]> write(Map<String, double[]> corpus, double max_avg_senten_len, double max_NUM_of_CHARS, double max_TTR, double min_avg_senten_len, double min_NUM_of_CHARS, double min_TTR, double aVG_avg_senten_len, double aVG_NUM_of_CHARS, double aVG_TTR) throws IOException {
+	private static Map<String, double[]> write(Map<String, double[]> corpus, double max_avg_senten_len, double max_NUM_of_CHARS, double max_TTR, double min_avg_senten_len, double min_NUM_of_CHARS, double min_TTR, double aVG_avg_senten_len, double aVG_NUM_of_CHARS, double aVG_TTR, double min_NUM_of_SPEAKERS, double max_NUM_of_SPEAKERS) throws IOException {
 		Map<String, double[]> corpus_normalized = new HashMap<>();
 		double dummy = 10000.0000;
 		String FEATURE_CSV_FILE = FRGeneralUtils.getPropertyVal("file.feature");
@@ -276,7 +285,12 @@ public class FeatureExtractorUtility {
 							//fileWriter.append(String.format("%.4f", Math.round((feature_vector[j] / max_NUM_of_CHARS) * dummy) / dummy)	+ FRConstants.COMMA);
 							feature_vector[j] = Math.round((feature_vector[j] / max_NUM_of_CHARS) * dummy) / dummy;
 						}
-						if(j != FRConstants.NUM_CHARS_20 && j != FRConstants.SENTENCE_L_14 && j != FRConstants.TTR_21){  // do not normalize others
+						if(j == FRConstants.NUM_SPEAKERS_23){//normlize
+							//fileWriter.append(String.format(Locale.ROOT, "%.4f", Math.round(((feature_vector[j]-aVG_NUM_of_CHARS) / (max_NUM_of_CHARS-min_NUM_of_CHARS)) * dummy) / dummy)	+ FRConstants.COMMA);
+							fileWriter.append(String.format("%.4f", Math.round((feature_vector[j] / max_NUM_of_SPEAKERS) * dummy) / dummy)	+ FRConstants.COMMA);
+							feature_vector[j] = Math.round((feature_vector[j] / max_NUM_of_SPEAKERS) * dummy) / dummy;
+						}
+						if(j != FRConstants.NUM_CHARS_20 && j != FRConstants.SENTENCE_L_14 && j != FRConstants.TTR_21 && j != FRConstants.NUM_SPEAKERS_23){  // do not normalize others
 							fileWriter.append(String.format(Locale.ROOT, "%.4f", Math.round(feature_vector[j] * dummy) / dummy) + FRConstants.COMMA);
 						}
 						if(j == FRConstants.TTR_21) {

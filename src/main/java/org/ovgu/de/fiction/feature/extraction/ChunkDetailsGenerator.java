@@ -409,7 +409,7 @@ public class ChunkDetailsGenerator {
 					if (quotes != null && !quotes.isEmpty()) {
 						for (CoreMap quote : quotes) {
 							noOfQuotes++;
-							// LOG.info("quote-----" + quote);
+							LOG.info("quote-----" + quote);
 							String speaker = quote.get(QuoteAttributionAnnotator.SpeakerAnnotation.class);
 							// LOG.info("speaker-----" + speaker);
 							if (speaker != null && !speaker.isEmpty()) {
