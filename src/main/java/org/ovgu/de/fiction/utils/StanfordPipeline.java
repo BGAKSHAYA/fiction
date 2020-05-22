@@ -20,12 +20,23 @@ public class StanfordPipeline {
 			return pipeline;
 
 		Properties properties = new Properties();
-		if (annotations == null)
+		if (annotations == null) {
 			properties.put(FRConstants.STNFRD_ANNOTATOR, FRConstants.STNFRD_LEMMA_ANNOTATIONS);
+		}
+//		else if(annotations.equals(FRConstants.STNFRD_QUOTE_ANNOTATIONS)) {
+//			properties.put(FRConstants.STNFRD_ANNOTATOR, FRConstants.STNFRD_QUOTE_ANNOTATIONS);
+//    		properties.put("ner.applyFineGrained", "false");
+//    		//properties.put("parse.model", "edu/stanford/nlp/models/srparser/englishSR.ser.gz");			
+//		}
+		else if(annotations.equals(FRConstants.STNFRD_COREF_ANNOTATIONS)) {
+			properties.put(FRConstants.STNFRD_ANNOTATOR, FRConstants.STNFRD_COREF_ANNOTATIONS);
+			properties.put("ner.applyFineGrained", "false");			
+		}
 		else
 			properties.put(FRConstants.STNFRD_ANNOTATOR, annotations);
 		properties.put("ner.useSUTime", "false ");
 		properties.put("ner.applyNumericClassifiers", "false");
+		properties.put("ner.applyFineGrained", "false");
 		if(annotations!=null && annotations.contains("parse")){
 			properties.put("depparse.model", "edu/stanford/nlp/models/parser/nndep/english_SD.gz");
 			//properties.put("parse.maxlen", "30");
