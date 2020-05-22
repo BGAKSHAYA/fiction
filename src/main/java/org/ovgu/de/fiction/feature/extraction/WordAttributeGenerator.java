@@ -73,7 +73,7 @@ public class WordAttributeGenerator {
 		StanfordCoreNLP corefPipeline = new StanfordCoreNLP(properties);
 		
 		for (CoreMap sentence : sentences) {
-			LOG.info("sentence " + sentence);// this loop will iterate each of the sentences
+			//LOG.info("sentence " + sentence);// this loop will iterate each of the sentences
 			tokenList.add(new Word(FRConstants.S_TAG, FRConstants.S_TAG, null, null, 0));
 			numOfSentences++;
 			for (CoreLabel cl : sentence.get(CoreAnnotations.TokensAnnotation.class)) {// this
@@ -271,8 +271,8 @@ public class WordAttributeGenerator {
 			else {
 				newAttributeList.add(2, 3);
 			}
-			LOG.info("name --- " + name);
-			LOG.info("attributeList --- " + newAttributeList);
+			//LOG.info("name --- " + name);
+			//LOG.info("attributeList --- " + newAttributeList);
 			characterMap.put(name, newAttributeList);
 		} else {
 			addToCharacterMap(name, mention, characterMap);
@@ -290,8 +290,8 @@ public class WordAttributeGenerator {
 		} else {
 			attributeList.add(2, 1);
 		}
-		LOG.info("name --- " + name);
-		LOG.info("attributeList --- " + attributeList);
+		//LOG.info("name --- " + name);
+		//LOG.info("attributeList --- " + attributeList);
 		characterMap.put(name, attributeList);
 	}
 
