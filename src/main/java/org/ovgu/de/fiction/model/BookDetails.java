@@ -20,6 +20,7 @@ public class BookDetails implements Serializable {
 	private Metadata metadata;
 	private String content;
 	private BigDecimal averageTTR;
+	private double [] genreFeatureScore;
 	
 	private int numOfChars; // added by Sayantan, at Book level
 
@@ -29,9 +30,9 @@ public class BookDetails implements Serializable {
 	 * @param bookId
 	 * @param chunks
 	 * @param metadata
-	 * @param feature
+	 * @param features
 	 */
-	public BookDetails(String bookId, List<Chunk> chunks, Metadata metadata, String content, int numOfChars, int foundProtagonist) {
+	public BookDetails(String bookId, List<Chunk> chunks, Metadata metadata, String content, int numOfChars, double[] genreFeatureScore, int foundProtagonist) {
 		super();
 		this.bookId = bookId;
 		this.chunks = chunks;
@@ -39,6 +40,7 @@ public class BookDetails implements Serializable {
 		this.content = content;
 		this.numOfChars = numOfChars;
 		this.setFoundProtagonist(foundProtagonist);
+		this.genreFeatureScore=genreFeatureScore;
 	}
 
 	/**
@@ -122,8 +124,6 @@ public class BookDetails implements Serializable {
 	public void setAverageTTR(BigDecimal averageTTR) {
 		this.averageTTR = averageTTR;
 	}
-	
-	
 
 	public int getNumOfChars() {
 		return numOfChars;
@@ -132,9 +132,38 @@ public class BookDetails implements Serializable {
 	public void setNumOfChars(int numOfChars) {
 		this.numOfChars = numOfChars;
 	}
+	
+	/**
+	 * @return the genreFeatureScore
+	 */
+	public double[] getGenreFeatureScore() {
+		return genreFeatureScore;
+	}
 
+	/**
+	 * @param genreFeatureScore
+	 *            the genreFeatureScore to set
+	 */
+	public void setGenreFeatureScore(double [] genreFeatureScore) {
+		this.genreFeatureScore = genreFeatureScore;
+	}
+	
+	/**
+	 * @return foundProtagonist
+	 */
+	public int getFoundProtagonist() {
+		return foundProtagonist;
+	}
 
-
+	/**
+	 * 
+	 * @param foundProtagonist
+	 * 			the foundProtagonist to set
+	 */
+	public void setFoundProtagonist(int foundProtagonist) {
+		this.foundProtagonist = foundProtagonist;
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Object#toString()
@@ -142,15 +171,7 @@ public class BookDetails implements Serializable {
 	@Override
 	public String toString() {
 		return "Book [bookId=" + bookId + " having " + chunks.size() + " chunks => " + chunks + ", metadata=" + metadata.getFirstTitle()
-				+ ", averageTTR=" + averageTTR + ", num of Chars="+numOfChars+ "]";
-	}
-
-	public int getFoundProtagonist() {
-		return foundProtagonist;
-	}
-
-	public void setFoundProtagonist(int foundProtagonist) {
-		this.foundProtagonist = foundProtagonist;
+				+ ", averageTTR=" + averageTTR + ", num of Chars=" + numOfChars + ", found protoganist=" + foundProtagonist + " , genreFeaure="+genreFeatureScore+"]";
 	}
 
 }
