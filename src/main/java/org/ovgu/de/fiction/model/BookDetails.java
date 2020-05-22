@@ -20,6 +20,7 @@ public class BookDetails implements Serializable {
 	private Metadata metadata;
 	private String content;
 	private BigDecimal averageTTR;
+	private double [] genreFeatureScore;
 	
 	private int numOfChars; // added by Sayantan, at Book level
 
@@ -30,13 +31,14 @@ public class BookDetails implements Serializable {
 	 * @param metadata
 	 * @param feature
 	 */
-	public BookDetails(String bookId, List<Chunk> chunks, Metadata metadata, String content, int numOfChars) {
+	public BookDetails(String bookId, List<Chunk> chunks, Metadata metadata, String content, int numOfChars,double[] genreFeatureScore ) {
 		super();
 		this.bookId = bookId;
 		this.chunks = chunks;
 		this.metadata = metadata;
 		this.content = content;
 		this.numOfChars = numOfChars;
+		this.genreFeatureScore=genreFeatureScore;
 	}
 
 	/**
@@ -131,6 +133,21 @@ public class BookDetails implements Serializable {
 		this.numOfChars = numOfChars;
 	}
 
+	/**
+	 * @return the genreFeatureScore
+	 */
+	public double[] getGenreFeatureScore() {
+		return genreFeatureScore;
+	}
+
+	/**
+	 * @param genreFeatureScore
+	 *            the genreFeatureScore to set
+	 */
+	public void setGenreFeatureScore(double [] genreFeatureScore) {
+		this.genreFeatureScore = genreFeatureScore;
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Object#toString()
@@ -138,7 +155,7 @@ public class BookDetails implements Serializable {
 	@Override
 	public String toString() {
 		return "Book [bookId=" + bookId + " having " + chunks.size() + " chunks => " + chunks + ", metadata=" + metadata.getFirstTitle()
-				+ ", averageTTR=" + averageTTR + ", num of Chars="+numOfChars+ "]";
+				+ ", averageTTR=" + averageTTR + ", num of Chars="+numOfChars+ " , genreFeaure="+genreFeatureScore+"]";
 	}
 
 }
