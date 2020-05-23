@@ -128,12 +128,12 @@ public class WordAttributeGenerator {
 			}
 
 			//LOG.info("sentence" + sentence);
-			if (!sentence.toString().isEmpty()) {
-				Annotation corefAnnotation = new Annotation(sentence.toString());
-				corefPipeline.annotate(corefAnnotation);
-				// corefAnnotation = COREF_PIPELINE.process(sentence);
-				processCorefChains(corefAnnotation, characterMap);
-			}
+//			if (!sentence.toString().isEmpty()) {
+//				Annotation corefAnnotation = new Annotation(sentence.toString());
+//				corefPipeline.annotate(corefAnnotation);
+//				// corefAnnotation = COREF_PIPELINE.process(sentence);
+//				processCorefChains(corefAnnotation, characterMap);
+//			}
 		}
 		
 		boolean found = findMainCharacter(characterMap, narratorCount,tokenList.size());

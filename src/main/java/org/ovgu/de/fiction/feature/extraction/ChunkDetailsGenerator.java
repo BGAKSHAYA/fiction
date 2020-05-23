@@ -399,7 +399,7 @@ public class ChunkDetailsGenerator {
 
 				//Consider only sentences starts with "
 				if (sentence.toString().stripLeading().startsWith("\"")) {
-					LOG.info("quoteSentence " + sentence.toString());
+					//LOG.info("quoteSentence " + sentence.toString());
 					Annotation quoteAnnotation = new Annotation(sentence);
 					pipelinee.annotate(quoteAnnotation);
 
@@ -407,7 +407,7 @@ public class ChunkDetailsGenerator {
 					if (quotes != null && !quotes.isEmpty()) {
 						for (CoreMap quote : quotes) {
 							noOfQuotes++;
-							LOG.info("quote-----" + quote);
+							//LOG.info("quote-----" + quote);
 							String speaker = quote.get(QuoteAttributionAnnotator.SpeakerAnnotation.class);
 							// LOG.info("speaker-----" + speaker);
 							if (speaker != null && !speaker.isEmpty()) {
