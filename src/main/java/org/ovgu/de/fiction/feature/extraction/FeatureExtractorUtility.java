@@ -358,7 +358,7 @@ public class FeatureExtractorUtility {
 						}
 						if(j == FRConstants.NUM_SPEAKERS_33){//normlize
 							//fileWriter.append(String.format(Locale.ROOT, "%.4f", Math.round(((feature_vector[j]-aVG_NUM_of_CHARS) / (max_NUM_of_CHARS-min_NUM_of_CHARS)) * dummy) / dummy)	+ FRConstants.COMMA);
-							fileWriter.append(String.format("%.4f", Math.round((feature_vector[j] / max_NUM_of_SPEAKERS) * dummy) / dummy)	+ FRConstants.COMMA);
+							fileWriter.append(String.format(Locale.ROOT, "%.4f", Math.round((feature_vector[j] / max_NUM_of_SPEAKERS) * dummy) / dummy)	+ FRConstants.COMMA);
 							feature_vector[j] = Math.round((feature_vector[j] / max_NUM_of_SPEAKERS) * dummy) / dummy;
 						}
 						if(j != FRConstants.NUM_CHARS_20 && j != FRConstants.SENTENCE_L_14 && j != FRConstants.TTR_21 && j != FRConstants.NUM_SPEAKERS_33){  // do not normalize others
