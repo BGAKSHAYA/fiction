@@ -22,6 +22,12 @@ Git link to the repository
 https://github.com/BGAKSHAYA/fictionUI
 
 ### Feature 01 (by Rashmi)
+To identify content based genre following steps are followed.
+1.	The pre-processed book is divided into 5 equal chunks.
+2.	Using Doc2Vec the features for book are generated  with vector size of 100
+3.	The dimensionality reduction technique called PCA is performed  on these vectors to reduce the vector dimensions from 100 to 2.
+4.	These 2 feature for 5 chunks(Total 10 features ) are concatened to rest of the features.
+5.	Hyperparameter tuning is performed using different vetor size such as 300,500.Also different techniques for dimensionality reduction are used such as MDS,ICA
 
 Git link to the branch:
 https://github.com/BGAKSHAYA/fiction/tree/Feature-1
