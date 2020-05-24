@@ -236,7 +236,7 @@ public class WordAttributeGenerator {
 									character.append(token.originalText().toLowerCase() + " ");
 								}
 							}
-							createCharacterMap(character.toString().stripTrailing(), characterMap, mention);
+							createCharacterMap(character.toString().trim(), characterMap, mention);
 						}						
 					}
 				}

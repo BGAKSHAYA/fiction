@@ -398,7 +398,7 @@ public class ChunkDetailsGenerator {
 			for (String sentence : sentencesList) {
 
 				//Consider only sentences starts with "
-				if (sentence.toString().stripLeading().startsWith("\"")) {
+				if (sentence.toString().trim().startsWith("\"")) {
 					//LOG.info("quoteSentence " + sentence.toString());
 					Annotation quoteAnnotation = new Annotation(sentence);
 					pipelinee.annotate(quoteAnnotation);
@@ -412,7 +412,7 @@ public class ChunkDetailsGenerator {
 							// LOG.info("speaker-----" + speaker);
 							if (speaker != null && !speaker.isEmpty()) {
 								// noOfSpeakers++;
-								speaker = speaker.strip().toLowerCase();
+								speaker = speaker.trim().toLowerCase();
 								if (speaker.length() <= 10) {
 									speakersSet.add(speaker.toLowerCase());
 								}
@@ -438,11 +438,11 @@ public class ChunkDetailsGenerator {
 										said = sentenceAfterQuote.substring(0, sentenceAfterQuote.indexOf(","));
 									}
 								}
-								String speaker2 = said.strip().replace("said", "").toLowerCase();
+								String speaker2 = said.trim().replace("said", "").toLowerCase();
 								// LOG.info("speaker 2 -----" + speaker2);
 								if (speaker2 != null && !speaker2.isEmpty() && speaker2.length() <= 10) {
 									speakersSet.add(speaker2);
-									if (speaker2.strip().equals("i")) {
+									if (speaker2.trim().equals("i")) {
 										noOfI++;
 									}
 								}
