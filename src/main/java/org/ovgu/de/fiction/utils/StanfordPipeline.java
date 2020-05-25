@@ -3,6 +3,7 @@ package org.ovgu.de.fiction.utils;
 import java.util.Properties;
 
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
+import edu.stanford.nlp.util.logging.RedwoodConfiguration;
 
 /**
  * @author Suhita
@@ -37,6 +38,9 @@ public class StanfordPipeline {
 		properties.put("ner.useSUTime", "false ");
 		properties.put("ner.applyNumericClassifiers", "false");
 		properties.put("ner.applyFineGrained", "false");
+
+		RedwoodConfiguration.current().clear().apply();
+
 		if(annotations!=null && annotations.contains("parse")){
 			properties.put("depparse.model", "edu/stanford/nlp/models/parser/nndep/english_SD.gz");
 			//properties.put("parse.maxlen", "30");
