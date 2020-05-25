@@ -2,7 +2,7 @@
 ## New Features
 ### User Interface (by Akshaya)
 We have a simple user interface to present the relevant books given a query book and an option to change the language and genre of the searched book. The results are fetched from the Java REST API and are presented along with the important aspects of the search results that we get through the global regression.
-The result section consists of the top 10 relevant books where apart from the book name and author we present other details of the book like the Summary of the book, Published Date, Genre Categories the book belongs to along with the average rating. These details are extracted from asynchronous calls made to **Google Books API** and are maintained in a static file to avoid any delay in the application. As the gensim document summarization didn't perform well with the known set of books we opted for the Google Books API.
+The result section consists of relevant books where apart from the book name and author we present other details of the book like the Summary of the book, Published Date, Genre Categories the book belongs to along with the average rating. These details are extracted from asynchronous calls made to **Google Books API** and are maintained in a static file to avoid any delay in the application. As the gensim document summarization didn't perform well with the known set of books we opted for the Google Books API.
 When the user clicks See More of a book, we save this information in **Mongo DB** along with Query bookid, Result  Bookid, Rank of the clicked book, and Device information like the browser, operating system. Below is the sample document stored in MongoDB
 
 ```sh
@@ -15,7 +15,11 @@ When the user clicks See More of a book, we save this information in **Mongo DB*
     resultBookClicked:"pg35297"
 }
 ```
-This angular and node app is hosted in Heroku at ____
+This angular and node app is hosted in Heroku at https://fictionui.herokuapp.com/
+
+Please find the java war file and feature extracted csv file in https://drive.google.com/drive/folders/1i6-6_Zfh9bB1HujRAoCM9wxyxwKarIQ0
+. Run this war file in Tomcat and place feature extracted file in the D Drive.
+
 
 Git link to the repository
 https://github.com/BGAKSHAYA/fictionUI
@@ -27,6 +31,8 @@ To identify content based genre following steps are followed.
 - The dimensionality reduction technique called PCA is performed on these vectors to reduce the vector dimensions from 100 to 2.
 - These 2 features for 5 chunks(Total 10 features ) are concatenated to the rest of the features.
 - Hyperparameter tuning is performed using different vector sizes such as 300,500. Also, different techniques for dimensionality reduction are used such as MDS, ICA
+
+To run this code install latest version of gensim,nltk and sklearn
 
 Git link to the branch:
 https://github.com/BGAKSHAYA/fiction/tree/Feature-1
@@ -58,8 +64,7 @@ F34 = Main Charcater(If found=1, else 0)
 ##### Issues
 
 - To get the real benefit of CoreNLP CorefCoreAnnotations.CorefChainAnnotation, the document should be annotated at once. But it takes a long time for the annotation process and therefore sentence by sentence annotation has done. Even for the sentence annotation it takes more than one hour for a single book and timing should be improved.
-- The character identification process should be improved as sometimes it does not identify the names in the text.
-- Rules used for decision making should be improved with the test run with 670 books.
+
 Git link to the branch:
 https://github.com/BGAKSHAYA/fiction/tree/FEATURE_2
 
