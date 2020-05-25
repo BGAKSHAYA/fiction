@@ -14,6 +14,7 @@ import org.ovgu.de.fiction.utils.FRConstants;
 import org.ovgu.de.fiction.utils.FRGeneralUtils;
 import org.springframework.boot.*;
 import org.springframework.boot.autoconfigure.*;
+import org.springframework.boot.context.web.SpringBootServletInitializer;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -23,11 +24,21 @@ import org.springframework.web.bind.annotation.*;
 @EnableAutoConfiguration
 @RequestMapping("/search")
 @SpringBootApplication
-@CrossOrigin(origins = "http://localhost:4200")
-public class FictionRetrievalDriver {
+@CrossOrigin(origins = "https://fictionui.herokuapp.com")
+public class FictionRetrievalDriver extends SpringBootServletInitializer{
 
     @RequestMapping(method = RequestMethod.POST)
     String getTopKResults(@RequestParam String bookID) throws Exception {
+		TopKResults topKResults = FictionRetrievalSearch.findRelevantBooks(bookID, FRGeneralUtils.getPropertyVal("file.feature") , 
+				FRConstants.SIMI_PENALISE_BY_CHUNK_NUMS, FRConstants.SIMI_ROLLUP_BY_ADDTN, 
+				FRConstants.SIMI_EXCLUDE_TTR_NUMCHARS,FRConstants.TOP_K_RESULTS,FRConstants.SIMILARITY_L2);	
+		
+		InterpretSearchResults interp = new InterpretSearchResults();
+        return topKResults.getResults_topK().toString() + "-" +	interp.performStatiscalAnalysisUsingRegression(topKResults).toString();
+    }
+    
+    @RequestMapping(method = RequestMethod.GET)
+    String getTopKResultsGet(@RequestParam String bookID) throws Exception {
 		TopKResults topKResults = FictionRetrievalSearch.findRelevantBooks(bookID, FRGeneralUtils.getPropertyVal("file.feature") , 
 				FRConstants.SIMI_PENALISE_BY_CHUNK_NUMS, FRConstants.SIMI_ROLLUP_BY_ADDTN, 
 				FRConstants.SIMI_EXCLUDE_TTR_NUMCHARS,FRConstants.TOP_K_RESULTS,FRConstants.SIMILARITY_L2);	
