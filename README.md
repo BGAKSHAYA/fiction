@@ -71,6 +71,9 @@ https://github.com/BGAKSHAYA/fiction/tree/FEATURE_2
 ### Feature 03 - Option 2 (by Akshaya)
 As a part of this feature, we have selected the ground truth for the mystery genre and extracted topics at the start chunk and the end chunk of the book using LDA. These extracted topics are still needed to be compared to the ground truth to get the similarity score at the start and end of the book.
 
+Git link to the branch:
+https://github.com/BGAKSHAYA/fiction/tree/feature-3
+
 ### Feature 04 (by Akshaya)
 Global Regression is performed in WEKA of Java. Once the top results are fetched we create a training dataset with the feature values making the inputs and the similarity score makes the class label. The dataset is divided into 80% for training and 20% for validation and 5 fold cross-validation is applied to get the Root Mean Squared Error. The parameter ridge is set to 0.5 based on hyperparameter tuning. Finally the features with the highest absolute weights are taken as important aspects.
 
