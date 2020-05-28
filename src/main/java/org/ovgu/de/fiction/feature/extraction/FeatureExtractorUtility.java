@@ -22,6 +22,7 @@ import weka.core.Instances;
 import weka.core.converters.ArffSaver;
 import weka.core.converters.CSVLoader;
 
+import java.io.*;
 /**
  * @author Suhita
  *         The class contains the methods for feature extraction
@@ -44,6 +45,67 @@ public class FeatureExtractorUtility {
 			ratio = ratio + (distinctWordsCount / totalWordsCount);
 		}
 		return new BigDecimal((ratio * 100) / chunkNo).setScale(3, RoundingMode.CEILING);
+	}
+	
+	public static double[] getGenreFeatures(List<Word> wordList) {
+		
+		double [] genreResponse=new double[FRConstants.GENRE_22_31.length];	
+		String bookWords = "";
+		for (Word s : wordList)
+		{
+		    bookWords += s.getOriginal() + " ";
+		}
+		String path="bookWordList.txt";
+		
+		try{
+		    // Create file 
+		    FileWriter fstream = new FileWriter(path);
+		    BufferedWriter out = new BufferedWriter(fstream);
+		    out.write(bookWords);
+		    //Close the output stream
+		    out.close();
+		} catch (Exception e){ //Catch exception if any
+		      System.err.println("Error: " + e.getMessage());
+		}
+		
+		try {
+        Process p = Runtime.getRuntime().exec("python GenreBook.py " + path);
+        BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
+        BufferedReader stdError = new BufferedReader(new InputStreamReader(p.getErrorStream()));
+        StringBuffer response = new StringBuffer();
+        StringBuffer errorStr = new StringBuffer();
+        boolean alreadyWaited = false;
+        String res ="";
+        while (p.isAlive()) {
+                if(alreadyWaited) {
+                    String temp;
+                    while ((temp = stdInput.readLine()) != null) {
+                       response.append(temp);
+                        
+                    }
+                    String errTemp;
+                    while ((errTemp = stdError.readLine()) != null) {
+                        errorStr.append(errTemp);
+                    }  
+                    res=response.toString();
+                }
+                alreadyWaited = true;
+                System.out.println(response.toString() + errorStr.toString());  
+
+        }
+     
+    String[] genreFeatures = res.split(" ");
+    for(int i = 0; i < genreFeatures.length; i++)
+    {
+    	
+    	genreResponse[i] = Double.parseDouble(genreFeatures[i]);
+    }
+    System.out.println(genreFeatures.length);
+
+    } catch (IOException e) {
+         System.out.print(e);    
+	}
+		return genreResponse;
 	}
 
 	private long getDistinctWordCount(List<String> tokens) {
@@ -139,7 +201,7 @@ public class FeatureExtractorUtility {
 	 *             Step 5: So, if query book has 12 chunks we have 12 results list (in a class)
 	 */
 	public static void writeFeaturesToCsv(List<BookDetails> books) throws IOException {
-
+		
 		Map<String, double[]> corpus = new HashMap<>(); // this corpus is (N*M) space, (each
 														 // book of
 														 // a corpus * #chunks of the book)
@@ -162,12 +224,11 @@ public class FeatureExtractorUtility {
 		double RUNNINGSUM_NUM_of_CHARS= 0.00;
 		
 		int row_count=0;
-		
 		for (BookDetails book : books) { // enter all features of all books (including
 										 // the query book)
 			List<Chunk> chunks = book.getChunks();
 			String bookId = book.getBookId();
-
+			
 			for (Chunk chunk : chunks) { // enter a chunk of a book - each chunk is a "doc" for us!
 										 // (including qry book)
 							
@@ -222,21 +283,29 @@ public class FeatureExtractorUtility {
 				RUNNINGSUM_NUM_of_CHARS = RUNNINGSUM_NUM_of_CHARS+feature_array[FRConstants.NUM_CHARS_20];
 				
 				feature_array[FRConstants.TTR_21] = book.getAverageTTR().doubleValue(); //global_vector_element, normalize_TTR
+				
 				if (max_TTR < feature_array[FRConstants.TTR_21])
 					max_TTR = feature_array[FRConstants.TTR_21]; 
 				if (max_TTR > feature_array[FRConstants.TTR_21])
 					max_TTR = feature_array[FRConstants.TTR_21];
 				RUNNINGSUM_TTR = RUNNINGSUM_TTR+feature_array[FRConstants.TTR_21];
 				
-				feature_array[FRConstants.QUOTES_RATIO_22] = feature.getQuotesRatio();
+				double [] genreFeatures =book.getGenreFeatureScore();
+				for(int i=0;i<FRConstants.GENRE_22_31.length;i++)
+					{
+						feature_array[FRConstants.GENRE_22_31[i]]= genreFeatures[i];
+					
+					}
 				
-				feature_array[FRConstants.NUM_SPEAKERS_23] = feature.getNoOfSpeakers();
-				if (max_NUM_of_SPEAKERS < feature_array[FRConstants.NUM_SPEAKERS_23])
-					max_NUM_of_SPEAKERS = feature_array[FRConstants.NUM_SPEAKERS_23]; 
-				if (min_NUM_of_SPEAKERS > feature_array[FRConstants.NUM_SPEAKERS_23])
-					min_NUM_of_SPEAKERS = feature_array[FRConstants.NUM_SPEAKERS_23]; 
+				feature_array[FRConstants.QUOTES_RATIO_32] = feature.getQuotesRatio();
 				
-				feature_array[FRConstants.PROTAGONIST_24] = book.getFoundProtagonist();
+				feature_array[FRConstants.NUM_SPEAKERS_33] = feature.getNoOfSpeakers();
+				if (max_NUM_of_SPEAKERS < feature_array[FRConstants.NUM_SPEAKERS_33])
+					max_NUM_of_SPEAKERS = feature_array[FRConstants.NUM_SPEAKERS_33]; 
+				if (min_NUM_of_SPEAKERS > feature_array[FRConstants.NUM_SPEAKERS_33])
+					min_NUM_of_SPEAKERS = feature_array[FRConstants.NUM_SPEAKERS_33]; 
+				
+				feature_array[FRConstants.PROTAGONIST_34] = book.getFoundProtagonist();
 				
 				// add each "doc" and its feature vector array
 				corpus.put(bookId + "-" + chunk.getChunkNo(), feature_array);
@@ -271,10 +340,12 @@ public class FeatureExtractorUtility {
 																								// Key
 				double[] feature_vector = chunk_features.getValue(); // feature vector per book
 																	 // chunk
+				
 				for (int j = 0; j < feature_vector.length; j++) {// loop over a vector
 
 					if (j != feature_vector.length - 1) {// for all Feature vector's -'j'th-element F1, F2..except last index
 						if (j == FRConstants.SENTENCE_L_14) {// normalize Avg. Sentence Length ,
+							
 																// 14th element of array
 							fileWriter.append(String.format(Locale.ROOT, "%.4f", Math.round(((feature_vector[j]-aVG_avg_senten_len) / (max_avg_senten_len-min_avg_senten_len)) * dummy) / dummy)+ FRConstants.COMMA);
 							//fileWriter.append(String.format("%.4f", Math.round((feature_vector[j] / max_avg_senten_len) * dummy) / dummy)+ FRConstants.COMMA);
@@ -285,12 +356,12 @@ public class FeatureExtractorUtility {
 							//fileWriter.append(String.format("%.4f", Math.round((feature_vector[j] / max_NUM_of_CHARS) * dummy) / dummy)	+ FRConstants.COMMA);
 							feature_vector[j] = Math.round((feature_vector[j] / max_NUM_of_CHARS) * dummy) / dummy;
 						}
-						if(j == FRConstants.NUM_SPEAKERS_23){//normlize
+						if(j == FRConstants.NUM_SPEAKERS_33){//normlize
 							//fileWriter.append(String.format(Locale.ROOT, "%.4f", Math.round(((feature_vector[j]-aVG_NUM_of_CHARS) / (max_NUM_of_CHARS-min_NUM_of_CHARS)) * dummy) / dummy)	+ FRConstants.COMMA);
-							fileWriter.append(String.format("%.4f", Math.round((feature_vector[j] / max_NUM_of_SPEAKERS) * dummy) / dummy)	+ FRConstants.COMMA);
+							fileWriter.append(String.format(Locale.ROOT, "%.4f", Math.round((feature_vector[j] / max_NUM_of_SPEAKERS) * dummy) / dummy)	+ FRConstants.COMMA);
 							feature_vector[j] = Math.round((feature_vector[j] / max_NUM_of_SPEAKERS) * dummy) / dummy;
 						}
-						if(j != FRConstants.NUM_CHARS_20 && j != FRConstants.SENTENCE_L_14 && j != FRConstants.TTR_21 && j != FRConstants.NUM_SPEAKERS_23){  // do not normalize others
+						if(j != FRConstants.NUM_CHARS_20 && j != FRConstants.SENTENCE_L_14 && j != FRConstants.TTR_21 && j != FRConstants.NUM_SPEAKERS_33){  // do not normalize others
 							fileWriter.append(String.format(Locale.ROOT, "%.4f", Math.round(feature_vector[j] * dummy) / dummy) + FRConstants.COMMA);
 						}
 						if(j == FRConstants.TTR_21) {
@@ -304,12 +375,15 @@ public class FeatureExtractorUtility {
 						fileWriter.append(String.format(Locale.ROOT, "%.4f", Math.round((feature_vector[j]) *dummy) / dummy) + FRConstants.NEW_LINE);
 					}
 				}
+				
 				corpus_normalized.put(chunk_features.getKey(), feature_vector);
 			}
 			//now write the csv to ARFF format for weka
 			//writeCSVtoARFF(FEATURE_CSV_FILE,FEATURE_ARFF_FILE);
 			fileWriter.flush();
 		}
+		
+		
 		return corpus_normalized;
 
 	}

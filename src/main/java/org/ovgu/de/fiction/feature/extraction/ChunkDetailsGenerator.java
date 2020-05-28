@@ -82,13 +82,16 @@ public class ChunkDetailsGenerator {
 
 		List<BookDetails> books = new ArrayList<>();
 		FeatureExtractorUtility feu = new FeatureExtractorUtility();
-
+		WordAttributeGenerator wag = new WordAttributeGenerator();
+		
 		// following loop runs, over path of each book
 		FRFileOperationUtils.getFileNames(CONTENT_EXTRCT_FOLDER).stream().forEach(file -> {
 			String fileName = file.getFileName().toString().replace(FRConstants.CONTENT_FILE, FRConstants.NONE);
-
+         
 			try {
 				BookDetails book = new BookDetails();
+				Concept cncpt = wag.generateWordAttributes(Paths.get(file.toString()));
+				List<Word> wordlist=cncpt.getWords();
 				book.setBookId(fileName);
 				book.setMetadata(FRGeneralUtils.getMetadata(fileName));
 				book.setChunks(getChunksFromFile(file.toString())); // this is a
@@ -101,11 +104,12 @@ public class ChunkDetailsGenerator {
 																	 // object/vector
 				book.setAverageTTR(feu.getAverageTTR(getEqualChunksFromFile(getTokensFromAllChunks(book.getChunks()))));
 				book.setNumOfChars(NUM_OF_CHARS_PER_BOOK == 0 ? 1 : NUM_OF_CHARS_PER_BOOK);
-				
 				book.setFoundProtagonist(foundProtagonist);
+				book.setGenreFeatureScore(feu.getGenreFeatures(wordlist));
+				
 				books.add(book);
 
-				 //LOG.debug("End Generate token for : " + fileName + " " + ((System.currentTimeMillis() - TIME) / 1000));
+				//LOG.debug("End Generate token for : " + fileName + " " + ((System.currentTimeMillis() - TIME) / 1000));
 				TIME = System.currentTimeMillis();
 
 				System.out.println(++BOOK_NO + " > " + book.toString());
@@ -134,7 +138,7 @@ public class ChunkDetailsGenerator {
 	 * @throws IOException
 	 */
 	public List<Chunk> getChunksFromFile(String path) throws IOException {
-
+        
 		int batchNumber;
 		List<Chunk> chunksList = new ArrayList<>();
 		Annotation annotation = null;
@@ -162,7 +166,10 @@ public class ChunkDetailsGenerator {
 			foundProtagonist = 1;
 		}		
 
+	  			
 		List<Word> wordList = cncpt.getWords();
+		
+		
 		int numOfSntncPerBook  = cncpt.getNumOfSentencesPerBook();
 		LOG.info(cncpt.getNumOfSentencesPerBook());
 		//System.exit(0);
@@ -256,7 +263,6 @@ public class ChunkDetailsGenerator {
 
 				
 				if (l.equals(FRConstants.P_TAG)) {
-					//LOG.info("sentence" + quoteSentenceSbf.toString());
 					//Created a new sentence list using <p> tags for quotation identification as existing sentence 
 					//creation split the sentences incorrectly when a quote is found
 					sentencesList.add(quoteSentenceSbf.toString());
@@ -390,18 +396,10 @@ public class ChunkDetailsGenerator {
 			}
 			
 			for (String sentence : sentencesList) {
-				// LOG.info("sentence" + sentence);
-//				if(!sentence.isEmpty()) {
-//					corefAnnotation = new Annotation(sentence);
-//					pipelinee.annotate(corefAnnotation);
-//					//corefAnnotation = COREF_PIPELINE.process(sentence);
-//					processCorefChains(corefAnnotation, characterMap);
-//				}
 
 				//Consider only sentences starts with "
-				if (sentence.toString().stripLeading().startsWith("\"")) {
-					LOG.info("quoteSentence " + sentence.toString());
-					// quoteAnnotation = QUOTE_PIPELINE.process(sentenceSbf.toString());
+				if (sentence.toString().trim().startsWith("\"")) {
+					//LOG.info("quoteSentence " + sentence.toString());
 					Annotation quoteAnnotation = new Annotation(sentence);
 					pipelinee.annotate(quoteAnnotation);
 
@@ -409,12 +407,12 @@ public class ChunkDetailsGenerator {
 					if (quotes != null && !quotes.isEmpty()) {
 						for (CoreMap quote : quotes) {
 							noOfQuotes++;
-							LOG.info("quote-----" + quote);
+							//LOG.info("quote-----" + quote);
 							String speaker = quote.get(QuoteAttributionAnnotator.SpeakerAnnotation.class);
 							// LOG.info("speaker-----" + speaker);
 							if (speaker != null && !speaker.isEmpty()) {
 								// noOfSpeakers++;
-								speaker = speaker.strip().toLowerCase();
+								speaker = speaker.trim().toLowerCase();
 								if (speaker.length() <= 10) {
 									speakersSet.add(speaker.toLowerCase());
 								}
@@ -440,11 +438,11 @@ public class ChunkDetailsGenerator {
 										said = sentenceAfterQuote.substring(0, sentenceAfterQuote.indexOf(","));
 									}
 								}
-								String speaker2 = said.strip().replace("said", "").toLowerCase();
+								String speaker2 = said.trim().replace("said", "").toLowerCase();
 								// LOG.info("speaker 2 -----" + speaker2);
 								if (speaker2 != null && !speaker2.isEmpty() && speaker2.length() <= 10) {
 									speakersSet.add(speaker2);
-									if (speaker2.strip().equals("i")) {
+									if (speaker2.trim().equals("i")) {
 										noOfI++;
 									}
 								}
@@ -479,6 +477,8 @@ public class ChunkDetailsGenerator {
 			// contentWtr.write(Chunk.getOriginalText(raw));
 			// chunk.setChunkFileLocation(chunkFileName);
 			// }
+			
+			
 			System.out.println("numbr of sentences for sentiment  ="+randomSntnCount+" for chunknum ="+chunkNo+", and total sentc  ="+numOfSntncPerBook+" for book path "+path);
 			chunk.setTokenListWithoutStopwordAndPunctuation(stpwrdPuncRmvd);
 			Feature feature = feu.generateFeature(chunkNo, paragraphCount, sentenceCount, raw, null, stpwrdPuncRmvd, malePrpPosPronounCount,
@@ -488,6 +488,8 @@ public class ChunkDetailsGenerator {
 			chunk.setFeature(feature);
 			chunksList.add(chunk);
 			chunkNo++;
+			
+			
 
 			// reset all var for next chunk
 			raw = new ArrayList<>();
