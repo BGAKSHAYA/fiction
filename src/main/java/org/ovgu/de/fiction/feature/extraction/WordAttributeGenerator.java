@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -65,6 +66,7 @@ public class WordAttributeGenerator {
 		int numOfSyllables = 0;
 		int numOfSentences =0;
 		double narratorCount = 0;
+		Set<String> familyTreeSet = new HashSet<String>();
 		Map<String, List<Integer>> characterMap = new HashMap<>();
 		
 		Properties properties = new Properties();
@@ -90,10 +92,11 @@ public class WordAttributeGenerator {
 				String ner = cl.get(CoreAnnotations.NamedEntityTagAnnotation.class);
 				String lemma = cl.get(CoreAnnotations.LemmaAnnotation.class).toLowerCase();
 				
-				String originalInLowerCase = original.toLowerCase();
-				if(originalInLowerCase.equals("i") || originalInLowerCase.equals("my") || originalInLowerCase.equals("mine") ||  originalInLowerCase.equals("me")) {
+				//String originalInLowerCase = original.toLowerCase();
+				if(original.matches(FRConstants.FIRST_PERSON_REGEX)) {
 					narratorCount++;
 				}
+				
 				/*
 				 * logic 2: check if ner is "P", then further check next 2 element in sentence , ex.
 				 * Tom Cruise, Mr. Tom Cruise if yes, then concatenate all two or three tokens i.e.
@@ -126,17 +129,23 @@ public class WordAttributeGenerator {
 				}
 
 			}
+			
+			if(!sentence.toString().isEmpty()) {
+				calculateFamilyLength(sentence.toString().toLowerCase(), familyTreeSet);
+			}
 
-			//LOG.info("sentence" + sentence);
 //			if (!sentence.toString().isEmpty()) {
 //				Annotation corefAnnotation = new Annotation(sentence.toString());
 //				corefPipeline.annotate(corefAnnotation);
-//				// corefAnnotation = COREF_PIPELINE.process(sentence);
 //				processCorefChains(corefAnnotation, characterMap);
 //			}
 		}
 		
-		boolean found = findMainCharacter(characterMap, narratorCount,tokenList.size());
+		LOG.info(familyTreeSet);
+		LOG.info("narratorCount: " + narratorCount + " tokenList.size(): " + tokenList.size() + " familyTreeSet.size(): " + familyTreeSet.size() + " narrator ratio: " + (narratorCount/tokenList.size()));
+		boolean found = executeCharacterScriptAndFindMainCharater(sentences, narratorCount, tokenList.size(), familyTreeSet.size());
+		
+		//findMainCharacter(characterMap, narratorCount,tokenList.size());
 		
 		cncpt.setWords(tokenList);
 		cncpt.setCharacterMap(feu.getUniqueCharacterMap(charMap));
@@ -146,7 +155,69 @@ public class WordAttributeGenerator {
 		return cncpt;
 	}
 
-	//Find main character from the character map and narator count
+	private void calculateFamilyLength(String sentence, Set<String> familyTreeSet) {
+		if(sentence.contains(FRConstants.FATHER)) {
+			familyTreeSet.add(FRConstants.FATHER);
+		}
+		if(sentence.contains(FRConstants.MOTHER)) {
+			familyTreeSet.add(FRConstants.MOTHER);
+		}
+		if(sentence.contains(FRConstants.SISTER)) {
+			familyTreeSet.add(FRConstants.SISTER);
+		}
+		if(sentence.contains(FRConstants.BROTHER)) {
+			familyTreeSet.add(FRConstants.BROTHER);			
+		}
+		if(sentence.contains(FRConstants.SON)) {
+			familyTreeSet.add(FRConstants.SON);	
+		}
+		if(sentence.contains(FRConstants.DAUGHTER)) {
+			familyTreeSet.add(FRConstants.DAUGHTER);	
+		}
+		if(sentence.contains(FRConstants.UNCLE)) {
+			familyTreeSet.add(FRConstants.UNCLE);
+		}
+		if(sentence.contains(FRConstants.AUNTY)) {
+			familyTreeSet.add(FRConstants.AUNTY);	
+		}
+		if(sentence.contains(FRConstants.MAN)) {
+			familyTreeSet.add(FRConstants.MAN);	
+		}
+		if(sentence.contains(FRConstants.HUSBAND)) {
+			familyTreeSet.add(FRConstants.HUSBAND);	
+		}
+		if(sentence.contains(FRConstants.WIFE)) {
+			familyTreeSet.add(FRConstants.WIFE);	
+		}
+		if(sentence.contains(FRConstants.CHILD)) {
+			familyTreeSet.add(FRConstants.CHILD);	
+		}
+		if(sentence.contains(FRConstants.GUARDIAN)) {
+			familyTreeSet.add(FRConstants.GUARDIAN);	
+		}
+		if(sentence.contains(FRConstants.BOY)) {
+			familyTreeSet.add(FRConstants.BOY);	
+		}
+		if(sentence.contains(FRConstants.GIRL)) {
+			familyTreeSet.add(FRConstants.GIRL);		
+		}
+	}
+
+	//Execute the python script to find the most two common characters
+	//and there appearance count in the book
+	private boolean executeCharacterScriptAndFindMainCharater(List<CoreMap> sentences, double narratorCount, int noOfTokens, int familyTreeLength) {
+		boolean found = FeatureExtractorUtility.getCharacters(sentences);
+		
+		double narratorRatio = (narratorCount/noOfTokens);
+		if(found || narratorRatio > 0.04 || familyTreeLength >= 7) {
+			return true;
+		}
+		return false;
+		
+	}
+
+	//Find main character from the character map and first person words count using coref annotation
+	//Not using because of the performance issue
 	private boolean findMainCharacter(Map<String, List<Integer>> characterMap, double narratorCount, int noOfTokens) {
 		Comparator<Entry<String, List<Integer>>> valueComparator = new Comparator<Entry<String, List<Integer>>>() {
 
@@ -241,8 +312,8 @@ public class WordAttributeGenerator {
 					}
 				}
 				// increase the count based on clusterid
-//				else if (mention.mentionType.equals(MentionType.PRONOMINAL)) {
-//				}
+				else if (mention.mentionType.equals(MentionType.PRONOMINAL)) {
+				}
 			}
 		}
 	}
@@ -271,8 +342,6 @@ public class WordAttributeGenerator {
 			else {
 				newAttributeList.add(2, 3);
 			}
-			//LOG.info("name --- " + name);
-			//LOG.info("attributeList --- " + newAttributeList);
 			characterMap.put(name, newAttributeList);
 		} else {
 			addToCharacterMap(name, mention, characterMap);
@@ -290,8 +359,6 @@ public class WordAttributeGenerator {
 		} else {
 			attributeList.add(2, 1);
 		}
-		//LOG.info("name --- " + name);
-		//LOG.info("attributeList --- " + attributeList);
 		characterMap.put(name, attributeList);
 	}
 

@@ -150,6 +150,40 @@ public interface FRConstants {
 
 	public static final String CHARACTER_STOPWORD_REGEX = "(?i)(mr|mrs|dr|doctor|duke|duchess|lady|Madame|madam|Monsieur|Mademoiselle|mister|miss|ms|sir|sire|Ru|de|<p>|-)\\.*+";
 
+	public static final String FIRST_PERSON_REGEX = "(?i)(my|mine|i|me)\\.*+";
+	
+	public static final String FATHER = "my father";
+	
+	public static final String MOTHER = "my mother";
+	
+	public static final String SISTER = "my sister";
+	
+	public static final String BROTHER = "my brother";
+	
+	public static final String SON = "my son";
+	
+	public static final String DAUGHTER = "my daughter";
+	
+	public static final String UNCLE = "my uncle";
+	
+	public static final String AUNTY = "my aunty";
+	
+	public static final String MAN = "my man";
+	
+	public static final String HUSBAND = "my husband";
+	
+	public static final String WIFE = "my wife";
+	
+	public static final String CHILD = "my child";
+	
+	public static final String GUARDIAN = "my guardian";
+	
+	public static final String BOY = "my boy";
+	
+	public static final String GIRL = "my girl";
+	
+	public static final String CHILDREN = "my children";
+	
 	/* Similarity related */
 	public static final String SIMILARITY_COSINE = "cosine";
 

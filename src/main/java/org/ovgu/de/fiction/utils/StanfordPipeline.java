@@ -51,4 +51,15 @@ public class StanfordPipeline {
 	public static void resetPipeline() {
 		pipeline = null;
 	}
+	
+	public static StanfordCoreNLP getQuotePipeline() {		
+		Properties properties = new Properties();
+		properties.setProperty("annotators", "tokenize,ssplit,pos,lemma,ner,depparse,coref,entitymentions,quote");
+		properties.put("ner.useSUTime", "false ");
+		properties.put("ner.applyNumericClassifiers", "false");
+		properties.put("ner.applyFineGrained", "false");
+		properties.put("parse.model", "edu/stanford/nlp/models/srparser/englishSR.ser.gz");
+		StanfordCoreNLP quotePipeline = new StanfordCoreNLP(properties);
+		return quotePipeline;		
+	}
 }

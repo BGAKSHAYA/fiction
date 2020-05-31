@@ -50,7 +50,6 @@ public class ChunkDetailsGenerator {
 	private String CONTENT_EXTRCT_FOLDER;
 	StanfordCoreNLP SENTI_PIPELINE;
 	StanfordCoreNLP QUOTE_PIPELINE;
-	StanfordCoreNLP COREF_PIPELINE;
 	private int foundProtagonist = 0;
 
 	protected void init() throws NumberFormatException, IOException {
@@ -67,10 +66,7 @@ public class ChunkDetailsGenerator {
 
 		SENTI_PIPELINE = StanfordPipeline.getPipeline(FRConstants.STNFRD_SENTI_ANNOTATIONS);
 		
-		//QUOTE_PIPELINE = StanfordPipeline.getPipeline(FRConstants.STNFRD_QUOTE_ANNOTATIONS);
-		
-		//COREF_PIPELINE = StanfordPipeline.getPipeline(FRConstants.STNFRD_COREF_ANNOTATIONS);
-
+		QUOTE_PIPELINE = StanfordPipeline.getQuotePipeline();
 	}
 
 	/**
@@ -167,14 +163,8 @@ public class ChunkDetailsGenerator {
 		}		
 
 	  			
-		List<Word> wordList = cncpt.getWords();
-		
-		
+		List<Word> wordList = cncpt.getWords();		
 		int numOfSntncPerBook  = cncpt.getNumOfSentencesPerBook();
-		LOG.info(cncpt.getNumOfSentencesPerBook());
-		//System.exit(0);
-		// String fileName =
-		// Paths.get(path).getFileName().toString().replace(Constants.CONTENT_FILE, Constants.NONE);
 
 		ParagraphPredicate filter = new ParagraphPredicate();
 		List<Word> copy = new ArrayList<>(wordList);
@@ -210,13 +200,7 @@ public class ChunkDetailsGenerator {
 		
 		Map<String, List<Integer>> characterMap = new HashMap<>();
 		
-		Properties properties = new Properties();
-		properties.setProperty("annotators", "tokenize,ssplit,pos,lemma,ner,depparse,coref,entitymentions,quote");
-		properties.put("ner.useSUTime", "false ");
-		properties.put("ner.applyNumericClassifiers", "false");
-		properties.put("ner.applyFineGrained", "false");
-		properties.put("parse.model", "edu/stanford/nlp/models/srparser/englishSR.ser.gz");
-		StanfordCoreNLP pipelinee = new StanfordCoreNLP(properties);
+
 		
 	
 		if(batchNumber==0) //very_small_book
@@ -401,7 +385,7 @@ public class ChunkDetailsGenerator {
 				if (sentence.toString().trim().startsWith("\"")) {
 					//LOG.info("quoteSentence " + sentence.toString());
 					Annotation quoteAnnotation = new Annotation(sentence);
-					pipelinee.annotate(quoteAnnotation);
+					QUOTE_PIPELINE.annotate(quoteAnnotation);
 
 					List<CoreMap> quotes = quoteAnnotation.get(CoreAnnotations.QuotationsAnnotation.class);
 					if (quotes != null && !quotes.isEmpty()) {
