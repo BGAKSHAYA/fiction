@@ -55,6 +55,7 @@ public class WordAttributeGenerator {
 
 		FeatureExtractorUtility feu = new FeatureExtractorUtility();
 		Concept cncpt = new Concept();
+		LOG.info(path.toString());
 		Annotation document = new Annotation(FRFileOperationUtils.readFile(path.toString()));
 
 		StanfordPipeline.getPipeline(null).annotate(document);
@@ -68,11 +69,6 @@ public class WordAttributeGenerator {
 		double narratorCount = 0;
 		Set<String> familyTreeSet = new HashSet<String>();
 		Map<String, List<Integer>> characterMap = new HashMap<>();
-		
-		Properties properties = new Properties();
-		properties.setProperty("annotators", "tokenize, ssplit, pos, lemma, ner, parse, dcoref, sentiment");
-		properties.put("ner.applyFineGrained", "false");	
-		StanfordCoreNLP corefPipeline = new StanfordCoreNLP(properties);
 		
 		for (CoreMap sentence : sentences) {
 			//LOG.info("sentence " + sentence);// this loop will iterate each of the sentences
@@ -209,7 +205,7 @@ public class WordAttributeGenerator {
 		boolean found = FeatureExtractorUtility.getCharacters(sentences);
 		
 		double narratorRatio = (narratorCount/noOfTokens);
-		if(found || narratorRatio > 0.04 || familyTreeLength >= 7) {
+		if(found || narratorRatio > 0.04 || familyTreeLength >= 6) {
 			return true;
 		}
 		return false;

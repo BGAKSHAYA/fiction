@@ -62,4 +62,12 @@ public class StanfordPipeline {
 		StanfordCoreNLP quotePipeline = new StanfordCoreNLP(properties);
 		return quotePipeline;		
 	}
+	
+	public static StanfordCoreNLP getCorefPipeline() {
+		Properties properties = new Properties();
+		properties.setProperty("annotators", "tokenize, ssplit, pos, lemma, ner, parse, dcoref, sentiment");
+		properties.put("ner.applyFineGrained", "false");	
+		StanfordCoreNLP corefPipeline = new StanfordCoreNLP(properties);
+		return corefPipeline;
+	}
 }

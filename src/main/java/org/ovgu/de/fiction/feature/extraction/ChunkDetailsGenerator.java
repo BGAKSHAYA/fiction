@@ -50,7 +50,6 @@ public class ChunkDetailsGenerator {
 	private String CONTENT_EXTRCT_FOLDER;
 	StanfordCoreNLP SENTI_PIPELINE;
 	StanfordCoreNLP QUOTE_PIPELINE;
-	private int foundProtagonist = 0;
 
 	protected void init() throws NumberFormatException, IOException {
 
@@ -100,7 +99,7 @@ public class ChunkDetailsGenerator {
 																	 // object/vector
 				book.setAverageTTR(feu.getAverageTTR(getEqualChunksFromFile(getTokensFromAllChunks(book.getChunks()))));
 				book.setNumOfChars(NUM_OF_CHARS_PER_BOOK == 0 ? 1 : NUM_OF_CHARS_PER_BOOK);
-				book.setFoundProtagonist(foundProtagonist);
+				book.setFoundProtagonist(cncpt.isProtaganist()?1:0);
 				book.setGenreFeatureScore(feu.getGenreFeatures(wordlist));
 				
 				books.add(book);
@@ -155,13 +154,9 @@ public class ChunkDetailsGenerator {
 		// dummu
 
 		for (Entry<String,Integer> c : cncpt.getCharacterMap().entrySet()) {
-			LOG.info(c.getKey()+" "+c.getValue());
+			//LOG.info(c.getKey()+" "+c.getValue());
 		}
-		NUM_OF_CHARS_PER_BOOK = cncpt.getCharacterMap().size();
-		if(cncpt.isProtaganist()) {
-			foundProtagonist = 1;
-		}		
-
+		NUM_OF_CHARS_PER_BOOK = cncpt.getCharacterMap().size();	
 	  			
 		List<Word> wordList = cncpt.getWords();		
 		int numOfSntncPerBook  = cncpt.getNumOfSentencesPerBook();
@@ -381,8 +376,13 @@ public class ChunkDetailsGenerator {
 			
 			for (String sentence : sentencesList) {
 
-				//Consider only sentences starts with "
-				if (sentence.toString().trim().startsWith("\"")) {
+				//Quotes can be inside "" or '', but quote annotation does not properly identified
+				//quotes within '', therefore replace '' with ""
+				if (!sentence.toString().isBlank()) {
+					
+					if(sentence.contains("'")) {
+						sentence = sentence.replaceAll("'", "\"");
+					}
 					//LOG.info("quoteSentence " + sentence.toString());
 					Annotation quoteAnnotation = new Annotation(sentence);
 					QUOTE_PIPELINE.annotate(quoteAnnotation);
@@ -450,7 +450,7 @@ public class ChunkDetailsGenerator {
 			
 			addToWordCountMap(raw, wordCountPerSntncMap, wordCountPerSntnc);
 			
-			LOG.info(" no of quotes "+ noOfQuotes + "---" + sentenceCount + "---" + speakersSet.size() + "---" + noOfI + "ratio---" + (noOfQuotes/sentenceCount));
+			LOG.info(" no of quotes "+ noOfQuotes + "---" + sentenceCount + "---" + speakersSet.size() + "---" + noOfI + " ratio---" + (noOfQuotes/sentenceCount));
 
 			Chunk chunk = new Chunk();
 			chunk.setChunkNo(chunkNo);
