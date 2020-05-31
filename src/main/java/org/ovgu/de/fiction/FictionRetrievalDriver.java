@@ -48,21 +48,21 @@ public class FictionRetrievalDriver extends SpringBootServletInitializer{
     }
 
 	public static void main(String[] args) throws Exception {
-        SpringApplication.run(FictionRetrievalDriver.class, args);
+        //SpringApplication.run(FictionRetrievalDriver.class, args);
 
 
 		long start = System.currentTimeMillis();		/* 1> Extract content from Gutenberg corpus - one time */
-		//  ContentExtractor.generateContentFromAllEpubs();
+		ContentExtractor.generateContentFromAllEpubs();
 		System.out.println("Time taken for generating content (min)-" + (System.currentTimeMillis() - start) / (1000 * 60));
 
 		start = System.currentTimeMillis();
 		/* 2> Generate features from the extracted content - one time */
-		// List<BookDetails> features = generateOtherFeatureForAll();
+		List<BookDetails> features = generateOtherFeatureForAll();
 		System.out.println("Time taken for feature extraction and chunk generation (min)-" + (System.currentTimeMillis() - start) / (1000 * 60));
 		start = System.currentTimeMillis();
 
 		/* 3> Write features to CSV - one time */
-		// FeatureExtractorUtility.writeFeaturesToCsv(features);
+		FeatureExtractorUtility.writeFeaturesToCsv(features);
 		start = System.currentTimeMillis();
 		System.out.println("Time taken for writing to CSV (min)-" + (System.currentTimeMillis() - start) / (1000 * 60));
 		
