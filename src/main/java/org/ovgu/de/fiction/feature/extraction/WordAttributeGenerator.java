@@ -11,7 +11,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Properties;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -31,7 +30,6 @@ import edu.stanford.nlp.ie.KBPRelationExtractor.NERTag;
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.pipeline.Annotation;
-import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.util.CoreMap;
 
 /**
@@ -51,14 +49,22 @@ public class WordAttributeGenerator {
 	 *         elements
 	 * @author Suhita, Modified by Sayantan for # of characters
 	 */
-	public Concept generateWordAttributes(Path path) {
+	public Concept generateWordAttributes(Path path, String locale) {
 
 		FeatureExtractorUtility feu = new FeatureExtractorUtility();
 		Concept cncpt = new Concept();
 		LOG.info(path.toString());
 		Annotation document = new Annotation(FRFileOperationUtils.readFile(path.toString()));
-
-		StanfordPipeline.getPipeline(null).annotate(document);
+		
+		String charStopWord = FRConstants.CHARACTER_STOPWORD_REGEX;
+		if(locale.equals(FRConstants.DE)) {
+			StanfordPipeline.getGermanPipeline().annotate(document);
+			charStopWord = FRConstants.CHARACTER_STOPWORD_REGEX_DE;
+		}
+		else {
+			StanfordPipeline.getPipeline(null).annotate(document);			
+		}
+		
 		List<CoreMap> sentences = document.get(CoreAnnotations.SentencesAnnotation.class);
 		List<Word> tokenList = new ArrayList<>();
 		Map<String, Integer> charMap = new HashMap<>(); // a new object per new
@@ -99,7 +105,7 @@ public class WordAttributeGenerator {
 				 * "Mr" +"Tom" + "Cruise" into a single token the single concatenated token is added
 				 * to a Map , where key is number of times "Mr. Tom Cruise" appears
 				 */
-				if (ner.equals(FRConstants.NER_CHARACTER) && !original.matches(FRConstants.CHARACTER_STOPWORD_REGEX)) {
+				if (ner.equals(FRConstants.NER_CHARACTER) && !original.matches(charStopWord)) {
 					if (charName.length() == 0)
 						charName.append(original.toLowerCase());
 					else
@@ -127,7 +133,7 @@ public class WordAttributeGenerator {
 			}
 			
 			if(!sentence.toString().isEmpty()) {
-				calculateFamilyLength(sentence.toString().toLowerCase(), familyTreeSet);
+				calculateFamilyLength(sentence.toString().toLowerCase(), familyTreeSet, locale);
 			}
 
 //			if (!sentence.toString().isEmpty()) {
@@ -151,51 +157,86 @@ public class WordAttributeGenerator {
 		return cncpt;
 	}
 
-	private void calculateFamilyLength(String sentence, Set<String> familyTreeSet) {
-		if(sentence.contains(FRConstants.FATHER)) {
-			familyTreeSet.add(FRConstants.FATHER);
+	private void calculateFamilyLength(String sentence, Set<String> familyTreeSet, String locale) {
+		
+		String father = FRConstants.FATHER;
+		String mother = FRConstants.MOTHER;
+		String sister = FRConstants.SISTER;
+		String brother = FRConstants.BROTHER;
+		String son = FRConstants.SON;
+		String daughter = FRConstants.DAUGHTER;
+		String uncle = FRConstants.UNCLE;
+		String aunty = FRConstants.AUNTY;
+		String man = FRConstants.MAN;
+		String husband = FRConstants.HUSBAND;
+		String wife = FRConstants.WIFE;
+		String child = FRConstants.CHILD;
+		String gurdian = FRConstants.GUARDIAN;
+		String boy = FRConstants.BOY;
+		String girl = FRConstants.GIRL;
+		
+		if(locale.equals(FRConstants.DE)) {
+			father = FRConstants.FATHER_DE;
+			mother = FRConstants.MOTHER_DE;
+			sister = FRConstants.SISTER_DE;
+			brother = FRConstants.BROTHER_DE;
+			son = FRConstants.SON_DE;
+			daughter = FRConstants.DAUGHTER_DE;
+			uncle = FRConstants.UNCLE_DE;
+			aunty = FRConstants.AUNTY_DE;
+			man = FRConstants.MAN_DE;
+			husband = FRConstants.HUSBAND_DE;
+			wife = FRConstants.WIFE_DE;
+			child = FRConstants.CHILD_DE;
+			gurdian = FRConstants.GUARDIAN_DE;
+			boy = FRConstants.BOY_DE;
+			girl = FRConstants.GIRL_DE;			
 		}
-		if(sentence.contains(FRConstants.MOTHER)) {
-			familyTreeSet.add(FRConstants.MOTHER);
+		
+		if(sentence.contains(father)) {
+			familyTreeSet.add(father);
 		}
-		if(sentence.contains(FRConstants.SISTER)) {
-			familyTreeSet.add(FRConstants.SISTER);
+		if(sentence.contains(mother)) {
+			familyTreeSet.add(mother);
 		}
-		if(sentence.contains(FRConstants.BROTHER)) {
-			familyTreeSet.add(FRConstants.BROTHER);			
+		if(sentence.contains(sister)) {
+			familyTreeSet.add(sister);
 		}
-		if(sentence.contains(FRConstants.SON)) {
-			familyTreeSet.add(FRConstants.SON);	
+		if(sentence.contains(brother)) {
+			familyTreeSet.add(brother);			
 		}
-		if(sentence.contains(FRConstants.DAUGHTER)) {
-			familyTreeSet.add(FRConstants.DAUGHTER);	
+		if(sentence.contains(son)) {
+			familyTreeSet.add(son);	
 		}
-		if(sentence.contains(FRConstants.UNCLE)) {
-			familyTreeSet.add(FRConstants.UNCLE);
+		if(sentence.contains(daughter)) {
+			familyTreeSet.add(daughter);	
 		}
-		if(sentence.contains(FRConstants.AUNTY)) {
-			familyTreeSet.add(FRConstants.AUNTY);	
+		if(sentence.contains(uncle)) {
+			familyTreeSet.add(uncle);
 		}
-		if(sentence.contains(FRConstants.MAN)) {
-			familyTreeSet.add(FRConstants.MAN);	
+		if(sentence.contains(aunty)) {
+			familyTreeSet.add(aunty);	
 		}
-		if(sentence.contains(FRConstants.HUSBAND)) {
-			familyTreeSet.add(FRConstants.HUSBAND);	
+		if(sentence.contains(man)) {
+			familyTreeSet.add(man);	
 		}
-		if(sentence.contains(FRConstants.WIFE)) {
-			familyTreeSet.add(FRConstants.WIFE);	
+		if(sentence.contains(husband)) {
+			familyTreeSet.add(husband);	
 		}
-		if(sentence.contains(FRConstants.CHILD)) {
-			familyTreeSet.add(FRConstants.CHILD);	
+		if(sentence.contains(wife)) {
+			familyTreeSet.add(wife);	
 		}
-		if(sentence.contains(FRConstants.GUARDIAN)) {
-			familyTreeSet.add(FRConstants.GUARDIAN);	
+		if(sentence.contains(child)) {
+			familyTreeSet.add(child);	
 		}
-		if(sentence.contains(FRConstants.BOY)) {
-			familyTreeSet.add(FRConstants.BOY);	
+		if(sentence.contains(gurdian)) {
+			familyTreeSet.add(gurdian);	
 		}
-		if(sentence.contains(FRConstants.GIRL)) {
-			familyTreeSet.add(FRConstants.GIRL);		
+		if(sentence.contains(boy)) {
+			familyTreeSet.add(boy);	
+		}
+		if(sentence.contains(girl)) {
+			familyTreeSet.add(girl);		
 		}
 	}
 

@@ -48,6 +48,7 @@ public class ChunkDetailsGenerator {
 	private int BOOK_NO;
 	private int NUM_OF_CHARS_PER_BOOK = -1;
 	private String CONTENT_EXTRCT_FOLDER;
+	private String CONTENT_EXTRCT_FOLDER_DE;
 	StanfordCoreNLP SENTI_PIPELINE;
 	StanfordCoreNLP QUOTE_PIPELINE;
 
@@ -58,6 +59,8 @@ public class ChunkDetailsGenerator {
 
 		OUT_FOLDER_TOKENS = FRGeneralUtils.getPropertyVal(FRConstants.OUT_FOLDER_TOKENS);
 		CONTENT_EXTRCT_FOLDER = FRGeneralUtils.getPropertyVal(FRConstants.OUT_FOLDER_CONTENT);
+		
+		CONTENT_EXTRCT_FOLDER_DE = FRGeneralUtils.getPropertyVal(FRConstants.OUT_FOLDER_CONTENT_DE);
 
 		LOCATIVE_PREPOSITION_LIST = FRGeneralUtils.getPrepositionList();
 		BOOK_NO = 0;
@@ -72,24 +75,29 @@ public class ChunkDetailsGenerator {
 	 * @return
 	 * @throws IOException
 	 */
-	public List<BookDetails> getChunksFromAllFiles() throws IOException {
+	public List<BookDetails> getChunksFromAllFiles(String local) throws IOException {
 		init();
 
 		List<BookDetails> books = new ArrayList<>();
 		FeatureExtractorUtility feu = new FeatureExtractorUtility();
 		WordAttributeGenerator wag = new WordAttributeGenerator();
 		
+		String contextExtractFolder = CONTENT_EXTRCT_FOLDER;
+		if(local.equals(FRConstants.DE)) {
+			contextExtractFolder = CONTENT_EXTRCT_FOLDER_DE;
+		}
+		
 		// following loop runs, over path of each book
-		FRFileOperationUtils.getFileNames(CONTENT_EXTRCT_FOLDER).stream().forEach(file -> {
+		FRFileOperationUtils.getFileNames(contextExtractFolder).stream().forEach(file -> {
 			String fileName = file.getFileName().toString().replace(FRConstants.CONTENT_FILE, FRConstants.NONE);
          
 			try {
 				BookDetails book = new BookDetails();
-				Concept cncpt = wag.generateWordAttributes(Paths.get(file.toString()));
+				Concept cncpt = wag.generateWordAttributes(Paths.get(file.toString()), local);
 				List<Word> wordlist=cncpt.getWords();
 				book.setBookId(fileName);
 				book.setMetadata(FRGeneralUtils.getMetadata(fileName));
-				book.setChunks(getChunksFromFile(file.toString())); // this is a
+				book.setChunks(getChunksFromFile(file.toString(), local)); // this is a
 																	 // list of
 																	 // chunks,
 																	 // each
@@ -132,7 +140,7 @@ public class ChunkDetailsGenerator {
 	 * @return : List of Chunks, Chunk has a feature vector object
 	 * @throws IOException
 	 */
-	public List<Chunk> getChunksFromFile(String path) throws IOException {
+	public List<Chunk> getChunksFromFile(String path, String locale) throws IOException {
         
 		int batchNumber;
 		List<Chunk> chunksList = new ArrayList<>();
@@ -143,7 +151,7 @@ public class ChunkDetailsGenerator {
 		WordAttributeGenerator wag = new WordAttributeGenerator();
 		FeatureExtractorUtility feu = new FeatureExtractorUtility();
 		List<String> stopwords = Arrays.asList(FRGeneralUtils.getPropertyVal(FRConstants.STOPWORD_FICTION).split("\\|"));
-		Concept cncpt = wag.generateWordAttributes(Paths.get(path)); // this is
+		Concept cncpt = wag.generateWordAttributes(Paths.get(path), locale); // this is
 																	 // a
 																	 // "word-token-pos-ner"
 																	 // list

@@ -11,13 +11,18 @@ public interface FRConstants {
 	public static final String CONFIG_FILE = "config.properties";
 	public static final String STOPWORD_CONFIG_FILE = "stopwords.properties";
 	public static final String EPUB_FOLDER = "folder.in.epub";
+	public static final String EPUB_FOLDER_DE = "folder.in.epub.de";
 	public static final String OUT_FOLDER_LOCATION = "folder.out.content";
+	public static final String OUT_FOLDER_LOCATION_DE = "folder.out.content.de";
 	public static final String WRITE_TOTAL_CONTENT_CONFIG = "write.totalcontent";
 	public static final String OUT_FOLDER_CONTENT = "folder.out.content";
+	public static final String OUT_FOLDER_CONTENT_DE = "folder.out.content";
 	public static final String CHUNK_SIZE = "chunk.size";
 	public static final String CHUNK_SIZE_FOR_TTR = "chunk.ttr.size";
 	public static final String OUT_FOLDER_TOKENS = "folder.out.chunks";
 	public static final String STOPWORD_FICTION = "stopword.fiction";
+	public static final String EN = "en";
+	public static final String DE = "de";
 
 	/* regex */
 	public static final String REGEX_ALL_PUNCTUATION = "[\\s\"\\.\\,\\?\\!\\:\\;\\'-]";
@@ -149,8 +154,12 @@ public interface FRConstants {
 	public static final String NER_CHARACTER = "PERSON";
 
 	public static final String CHARACTER_STOPWORD_REGEX = "(?i)(mr|mrs|dr|doctor|duke|duchess|lady|Madame|madam|Monsieur|Mademoiselle|mister|miss|ms|sir|sire|Ru|de|<p>|-)\\.*+";
+	
+	public static final String CHARACTER_STOPWORD_REGEX_DE = "(?i)(herrin|herr|herzogin|dame|madame|frau|<p>|-)\\.*+";
 
 	public static final String FIRST_PERSON_REGEX = "(?i)(my|mine|i|me)\\.*+";
+	
+	public static final String FIRST_PERSON_REGEX_DE = "(?i)(ich|mich|mir)\\.*+";
 	
 	public static final String FATHER = "my father";
 	
@@ -183,6 +192,38 @@ public interface FRConstants {
 	public static final String GIRL = "my girl";
 	
 	public static final String CHILDREN = "my children";
+	
+	public static final String FATHER_DE = "mein Vater";
+	
+	public static final String MOTHER_DE = "meine Mutter";
+	
+	public static final String SISTER_DE = "meine Schwester";
+	
+	public static final String BROTHER_DE = "mein Bruder";
+	
+	public static final String SON_DE = "mein Sohn";
+	
+	public static final String DAUGHTER_DE = "meine Tochter";
+	
+	public static final String UNCLE_DE = "mein Onkel";
+	
+	public static final String AUNTY_DE = "meine Tante";
+	
+	public static final String MAN_DE = "mein Mann";
+	
+	public static final String HUSBAND_DE = "mein Ehemann";
+	
+	public static final String WIFE_DE = "meine Frau";
+	
+	public static final String CHILD_DE = "mein Kind";
+	
+	public static final String GUARDIAN_DE = "mein Schutzengel";
+	
+	public static final String BOY_DE = "mein Junge";
+	
+	public static final String GIRL_DE = "mein Mädchen";
+	
+	public static final String CHILDREN_DE = "meine Kinder";
 	
 	/* Similarity related */
 	public static final String SIMILARITY_COSINE = "cosine";

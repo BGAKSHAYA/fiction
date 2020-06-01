@@ -52,19 +52,28 @@ public class FictionRetrievalDriver extends SpringBootServletInitializer{
 
 
 		long start = System.currentTimeMillis();		/* 1> Extract content from Gutenberg corpus - one time */
-		ContentExtractor.generateContentFromAllEpubs();
+		ContentExtractor.generateContentFromAllEpubs(FRConstants.EN);
+		//For German books
+		ContentExtractor.generateContentFromAllEpubs(FRConstants.DE);
 		System.out.println("Time taken for generating content (min)-" + (System.currentTimeMillis() - start) / (1000 * 60));
 
 		start = System.currentTimeMillis();
 		/* 2> Generate features from the extracted content - one time */
-		List<BookDetails> features = generateOtherFeatureForAll();
+		List<BookDetails> features = generateOtherFeatureForAll(FRConstants.EN);
+		//For German books
+		List<BookDetails> featuresDe = generateOtherFeatureForAll(FRConstants.DE);
 		System.out.println("Time taken for feature extraction and chunk generation (min)-" + (System.currentTimeMillis() - start) / (1000 * 60));
 		start = System.currentTimeMillis();
 
 		/* 3> Write features to CSV - one time */
 		FeatureExtractorUtility.writeFeaturesToCsv(features);
+		//For German books
+		FeatureExtractorUtility.writeFeaturesToCsv(featuresDe);
 		start = System.currentTimeMillis();
 		System.out.println("Time taken for writing to CSV (min)-" + (System.currentTimeMillis() - start) / (1000 * 60));
+		
+		
+		//FeatureExtractorUtility.writeFeaturesToCsv(featuresDe);
 		
 		/* 4> Query */
 		String qryBookNum = "pg1400DickensGreatExp"; //pg11CarolAlice,  pg1400DickensGreatExp,pg766DickensDavidCopfld
@@ -92,9 +101,9 @@ public class FictionRetrievalDriver extends SpringBootServletInitializer{
 		//findLuceneRelevantBooks(qryBookNum);
 	}
 
-	public static List<BookDetails> generateOtherFeatureForAll() throws IOException {
+	public static List<BookDetails> generateOtherFeatureForAll(String locale) throws IOException {
 		ChunkDetailsGenerator chunkImpl = new ChunkDetailsGenerator();
-		List<BookDetails> books = chunkImpl.getChunksFromAllFiles();
+		List<BookDetails> books = chunkImpl.getChunksFromAllFiles(locale);
 		return books;
 	}
 

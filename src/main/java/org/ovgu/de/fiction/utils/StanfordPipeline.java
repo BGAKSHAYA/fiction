@@ -70,4 +70,9 @@ public class StanfordPipeline {
 		StanfordCoreNLP corefPipeline = new StanfordCoreNLP(properties);
 		return corefPipeline;
 	}
+	
+	public static StanfordCoreNLP getGermanPipeline() {
+		StanfordCoreNLP pipeline = new StanfordCoreNLP("german");
+		return pipeline;
+	}
 }
