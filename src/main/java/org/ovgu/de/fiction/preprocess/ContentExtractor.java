@@ -18,6 +18,9 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.ovgu.de.fiction.utils.FRConstants;
 import org.ovgu.de.fiction.utils.FRGeneralUtils;
+
+import edu.stanford.nlp.io.EncodingPrintWriter.out;
+
 import org.ovgu.de.fiction.utils.FRFileOperationUtils;
 
 import nl.siegmann.epublib.domain.Author;
@@ -38,6 +41,8 @@ public class ContentExtractor {
 	final static Logger LOG = Logger.getLogger(ContentExtractor.class);
 
 	private static String OUT_FOLDER;
+	
+	private static String OUT_FOLDER_DE;
 
 	/**
 	 * @throws IOException
@@ -45,19 +50,25 @@ public class ContentExtractor {
 	 */
 	public static void init() throws IOException {
 		OUT_FOLDER = FRGeneralUtils.getPropertyVal(FRConstants.OUT_FOLDER_LOCATION);
+		
+		OUT_FOLDER_DE = FRGeneralUtils.getPropertyVal(FRConstants.OUT_FOLDER_LOCATION_DE);
 	}
 
 	/**
 	 * @throws IOException
 	 *             The method generates the content from all epubs in corpus
 	 */
-	public static void generateContentFromAllEpubs() throws IOException {
+	public static void generateContentFromAllEpubs(String locale) throws IOException {
 
 		init();
 		String outFolder = FRGeneralUtils.getPropertyVal(FRConstants.EPUB_FOLDER);
+		if(locale.equals(FRConstants.DE)) {
+			outFolder = FRGeneralUtils.getPropertyVal(FRConstants.EPUB_FOLDER_DE);			
+		}
+		
 		FRFileOperationUtils.getFileNames(outFolder).parallelStream().forEach(file -> {
 			try {
-				generateContentFromEpub(file);
+				generateContentFromEpub(file, locale);
 			} catch (IOException e) {
 				LOG.error("Error processing Epubs -" + e.getMessage());
 			}
@@ -73,14 +84,14 @@ public class ContentExtractor {
 	 *         html format.
 	 * @throws IOException
 	 */
-	public static String generateContentFromEpub(Path path) throws IOException {
+	public static String generateContentFromEpub(Path path, String locale) throws IOException {
 		init();
 		EpubReader epubReader = new EpubReader();
 		Book book;
 		book = epubReader.readEpub(new FileInputStream(path.toString()));
 		String fileName = path.getFileName().toString().replace(FRConstants.EPUB_EXTN, "");
-		String content = generateTotalHtmlContent(book, fileName);
-		return generateContentToBeAnalysed(book, fileName, content);
+		String content = generateTotalHtmlContent(book, fileName, locale);
+		return generateContentToBeAnalysed(book, fileName, content, locale);
 	}
 
 	/**
@@ -90,11 +101,15 @@ public class ContentExtractor {
 	 * @return
 	 * @throws IOException
 	 */
-	private static String generateContentToBeAnalysed(Book book, String fileName, String content) throws IOException {
+	private static String generateContentToBeAnalysed(Book book, String fileName, String content, String locale) throws IOException {
+		String outFolder = OUT_FOLDER;
+		if(locale.equals(FRConstants.DE)) {
+			outFolder = OUT_FOLDER_DE;
+		}
 
 		StringBuffer finalContent = new StringBuffer();
 		try (Writer contentWtr = new BufferedWriter(
-				new OutputStreamWriter(new FileOutputStream(OUT_FOLDER + fileName + FRConstants.CONTENT_FILE)));) {
+				new OutputStreamWriter(new FileOutputStream(outFolder + fileName + FRConstants.CONTENT_FILE)));) {
 			Document doc = Jsoup.parse(content);
 			LOG.debug("Generating content for - " + book.getTitle());
 
@@ -134,14 +149,14 @@ public class ContentExtractor {
 		return finalContentStr;
 	}
 
-	private static String generateTotalHtmlContent(Book book, String fileName) {
+	private static String generateTotalHtmlContent(Book book, String fileName, String locale) {
 		StringBuffer content = new StringBuffer();
 
 		book.getSpine().getSpineReferences().forEach(s -> {
 			try {
 				content.append(new String(s.getResource().getData())).append(FRConstants.NEW_LINE);
 				if (FRGeneralUtils.getPropertyVal(FRConstants.WRITE_TOTAL_CONTENT_CONFIG).equals(FRConstants.TRUE))
-					writeTotalHtmlContent(s, fileName);
+					writeTotalHtmlContent(s, fileName, locale);
 			} catch (IOException e) {
 				LOG.error("Exception while writing full content");
 			}
@@ -154,9 +169,13 @@ public class ContentExtractor {
 	 * @param fileName
 	 *            The method writes the entire content in HTML format to a file
 	 */
-	private static void writeTotalHtmlContent(SpineReference sref, String fileName) {
+	private static void writeTotalHtmlContent(SpineReference sref, String fileName, String locale) {
+		String outFolder = OUT_FOLDER;
+		if(locale.equals(FRConstants.DE)) {
+			outFolder = OUT_FOLDER_DE;
+		}
 		try (Writer fullContentHTML = new BufferedWriter(
-				new OutputStreamWriter(new FileOutputStream(OUT_FOLDER + fileName + FRConstants.FULL_HTML)));) {
+				new OutputStreamWriter(new FileOutputStream(outFolder + fileName + FRConstants.FULL_HTML)));) {
 			fullContentHTML.write(new String(sref.getResource().getData()));
 			fullContentHTML.write(FRConstants.NEW_LINE);
 		} catch (IOException e1) {

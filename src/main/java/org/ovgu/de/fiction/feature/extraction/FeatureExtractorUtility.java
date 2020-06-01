@@ -1,8 +1,11 @@
 package org.ovgu.de.fiction.feature.extraction;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
@@ -11,6 +14,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.ovgu.de.fiction.model.BookDetails;
 import org.ovgu.de.fiction.model.Chunk;
 import org.ovgu.de.fiction.model.Feature;
@@ -18,16 +22,17 @@ import org.ovgu.de.fiction.model.Word;
 import org.ovgu.de.fiction.utils.FRConstants;
 import org.ovgu.de.fiction.utils.FRGeneralUtils;
 
+import edu.stanford.nlp.util.CoreMap;
 import weka.core.Instances;
 import weka.core.converters.ArffSaver;
 import weka.core.converters.CSVLoader;
-
-import java.io.*;
 /**
  * @author Suhita
  *         The class contains the methods for feature extraction
  */
 public class FeatureExtractorUtility {
+	
+	final static Logger LOG = Logger.getLogger(FeatureExtractorUtility.class);
 
 	/**
 	 * @param chunks
@@ -45,6 +50,67 @@ public class FeatureExtractorUtility {
 			ratio = ratio + (distinctWordsCount / totalWordsCount);
 		}
 		return new BigDecimal((ratio * 100) / chunkNo).setScale(3, RoundingMode.CEILING);
+	}
+	
+	/**
+	 * @param sentences
+	 * @return
+	 * 		The method finds whether a main character found or not
+	 */
+	public static boolean getCharacters(List<CoreMap> sentences) {
+
+		String path = "bookForCharacter.txt";
+
+		try {
+			// Create file
+			FileWriter fstream = new FileWriter(path);
+			BufferedWriter out = new BufferedWriter(fstream);
+			out.write(sentences.toString());
+			// Close the output stream
+			out.close();
+		} catch (Exception e) { // Catch exception if any
+			System.err.println("Error: " + e.getMessage());
+		}
+
+		try {
+			Process p = Runtime.getRuntime().exec("python CharacterBook.py " + path);
+			BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
+			BufferedReader stdError = new BufferedReader(new InputStreamReader(p.getErrorStream()));
+			StringBuffer response = new StringBuffer();
+			StringBuffer errorStr = new StringBuffer();
+			boolean alreadyWaited = false;
+			String res = "";
+			while (p.isAlive()) {
+				if (alreadyWaited) {
+					String temp;
+					while ((temp = stdInput.readLine()) != null) {
+						response.append(temp);
+
+					}
+					String errTemp;
+					while ((errTemp = stdError.readLine()) != null) {
+						errorStr.append(errTemp);
+					}
+					res = response.toString();
+				}
+				alreadyWaited = true;
+				System.out.println(response.toString() + errorStr.toString());
+
+			}
+
+			if (response != null && response.length() > 0) {
+				String answer = res.substring(res.indexOf("(") + 1, res.indexOf(")"));
+				String[] characterArray = answer.split(",");
+				LOG.info("character diff: " + characterArray[1] + " " + characterArray[3]);
+				if ((Integer.valueOf(characterArray[1].replace(" ", ""))
+						- Integer.valueOf(characterArray[3].replace(" ", ""))) > 100) {
+					return true;
+				}
+			}
+		} catch (IOException e) {
+			System.out.print(e);
+		}
+		return false;
 	}
 	
 	public static double[] getGenreFeatures(List<Word> wordList) {

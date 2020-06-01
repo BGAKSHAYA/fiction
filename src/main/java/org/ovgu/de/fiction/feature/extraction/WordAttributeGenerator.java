@@ -6,11 +6,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Properties;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -30,7 +30,6 @@ import edu.stanford.nlp.ie.KBPRelationExtractor.NERTag;
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.pipeline.Annotation;
-import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.util.CoreMap;
 
 /**
@@ -50,13 +49,22 @@ public class WordAttributeGenerator {
 	 *         elements
 	 * @author Suhita, Modified by Sayantan for # of characters
 	 */
-	public Concept generateWordAttributes(Path path) {
+	public Concept generateWordAttributes(Path path, String locale) {
 
 		FeatureExtractorUtility feu = new FeatureExtractorUtility();
 		Concept cncpt = new Concept();
+		LOG.info(path.toString());
 		Annotation document = new Annotation(FRFileOperationUtils.readFile(path.toString()));
-
-		StanfordPipeline.getPipeline(null).annotate(document);
+		
+		String charStopWord = FRConstants.CHARACTER_STOPWORD_REGEX;
+		if(locale.equals(FRConstants.DE)) {
+			StanfordPipeline.getGermanPipeline().annotate(document);
+			charStopWord = FRConstants.CHARACTER_STOPWORD_REGEX_DE;
+		}
+		else {
+			StanfordPipeline.getPipeline(null).annotate(document);			
+		}
+		
 		List<CoreMap> sentences = document.get(CoreAnnotations.SentencesAnnotation.class);
 		List<Word> tokenList = new ArrayList<>();
 		Map<String, Integer> charMap = new HashMap<>(); // a new object per new
@@ -65,12 +73,8 @@ public class WordAttributeGenerator {
 		int numOfSyllables = 0;
 		int numOfSentences =0;
 		double narratorCount = 0;
+		Set<String> familyTreeSet = new HashSet<String>();
 		Map<String, List<Integer>> characterMap = new HashMap<>();
-		
-		Properties properties = new Properties();
-		properties.setProperty("annotators", "tokenize, ssplit, pos, lemma, ner, parse, dcoref, sentiment");
-		properties.put("ner.applyFineGrained", "false");	
-		StanfordCoreNLP corefPipeline = new StanfordCoreNLP(properties);
 		
 		for (CoreMap sentence : sentences) {
 			//LOG.info("sentence " + sentence);// this loop will iterate each of the sentences
@@ -90,17 +94,18 @@ public class WordAttributeGenerator {
 				String ner = cl.get(CoreAnnotations.NamedEntityTagAnnotation.class);
 				String lemma = cl.get(CoreAnnotations.LemmaAnnotation.class).toLowerCase();
 				
-				String originalInLowerCase = original.toLowerCase();
-				if(originalInLowerCase.equals("i") || originalInLowerCase.equals("my") || originalInLowerCase.equals("mine") ||  originalInLowerCase.equals("me")) {
+				//String originalInLowerCase = original.toLowerCase();
+				if(original.matches(FRConstants.FIRST_PERSON_REGEX)) {
 					narratorCount++;
 				}
+				
 				/*
 				 * logic 2: check if ner is "P", then further check next 2 element in sentence , ex.
 				 * Tom Cruise, Mr. Tom Cruise if yes, then concatenate all two or three tokens i.e.
 				 * "Mr" +"Tom" + "Cruise" into a single token the single concatenated token is added
 				 * to a Map , where key is number of times "Mr. Tom Cruise" appears
 				 */
-				if (ner.equals(FRConstants.NER_CHARACTER) && !original.matches(FRConstants.CHARACTER_STOPWORD_REGEX)) {
+				if (ner.equals(FRConstants.NER_CHARACTER) && !original.matches(charStopWord)) {
 					if (charName.length() == 0)
 						charName.append(original.toLowerCase());
 					else
@@ -126,17 +131,23 @@ public class WordAttributeGenerator {
 				}
 
 			}
+			
+			if(!sentence.toString().isEmpty()) {
+				calculateFamilyLength(sentence.toString().toLowerCase(), familyTreeSet, locale);
+			}
 
-			//LOG.info("sentence" + sentence);
 //			if (!sentence.toString().isEmpty()) {
 //				Annotation corefAnnotation = new Annotation(sentence.toString());
 //				corefPipeline.annotate(corefAnnotation);
-//				// corefAnnotation = COREF_PIPELINE.process(sentence);
 //				processCorefChains(corefAnnotation, characterMap);
 //			}
 		}
 		
-		boolean found = findMainCharacter(characterMap, narratorCount,tokenList.size());
+		LOG.info(familyTreeSet);
+		LOG.info("narratorCount: " + narratorCount + " tokenList.size(): " + tokenList.size() + " familyTreeSet.size(): " + familyTreeSet.size() + " narrator ratio: " + (narratorCount/tokenList.size()));
+		boolean found = executeCharacterScriptAndFindMainCharater(sentences, narratorCount, tokenList.size(), familyTreeSet.size());
+		
+		//findMainCharacter(characterMap, narratorCount,tokenList.size());
 		
 		cncpt.setWords(tokenList);
 		cncpt.setCharacterMap(feu.getUniqueCharacterMap(charMap));
@@ -146,7 +157,104 @@ public class WordAttributeGenerator {
 		return cncpt;
 	}
 
-	//Find main character from the character map and narator count
+	private void calculateFamilyLength(String sentence, Set<String> familyTreeSet, String locale) {
+		
+		String father = FRConstants.FATHER;
+		String mother = FRConstants.MOTHER;
+		String sister = FRConstants.SISTER;
+		String brother = FRConstants.BROTHER;
+		String son = FRConstants.SON;
+		String daughter = FRConstants.DAUGHTER;
+		String uncle = FRConstants.UNCLE;
+		String aunty = FRConstants.AUNTY;
+		String man = FRConstants.MAN;
+		String husband = FRConstants.HUSBAND;
+		String wife = FRConstants.WIFE;
+		String child = FRConstants.CHILD;
+		String gurdian = FRConstants.GUARDIAN;
+		String boy = FRConstants.BOY;
+		String girl = FRConstants.GIRL;
+		
+		if(locale.equals(FRConstants.DE)) {
+			father = FRConstants.FATHER_DE;
+			mother = FRConstants.MOTHER_DE;
+			sister = FRConstants.SISTER_DE;
+			brother = FRConstants.BROTHER_DE;
+			son = FRConstants.SON_DE;
+			daughter = FRConstants.DAUGHTER_DE;
+			uncle = FRConstants.UNCLE_DE;
+			aunty = FRConstants.AUNTY_DE;
+			man = FRConstants.MAN_DE;
+			husband = FRConstants.HUSBAND_DE;
+			wife = FRConstants.WIFE_DE;
+			child = FRConstants.CHILD_DE;
+			gurdian = FRConstants.GUARDIAN_DE;
+			boy = FRConstants.BOY_DE;
+			girl = FRConstants.GIRL_DE;			
+		}
+		
+		if(sentence.contains(father)) {
+			familyTreeSet.add(father);
+		}
+		if(sentence.contains(mother)) {
+			familyTreeSet.add(mother);
+		}
+		if(sentence.contains(sister)) {
+			familyTreeSet.add(sister);
+		}
+		if(sentence.contains(brother)) {
+			familyTreeSet.add(brother);			
+		}
+		if(sentence.contains(son)) {
+			familyTreeSet.add(son);	
+		}
+		if(sentence.contains(daughter)) {
+			familyTreeSet.add(daughter);	
+		}
+		if(sentence.contains(uncle)) {
+			familyTreeSet.add(uncle);
+		}
+		if(sentence.contains(aunty)) {
+			familyTreeSet.add(aunty);	
+		}
+		if(sentence.contains(man)) {
+			familyTreeSet.add(man);	
+		}
+		if(sentence.contains(husband)) {
+			familyTreeSet.add(husband);	
+		}
+		if(sentence.contains(wife)) {
+			familyTreeSet.add(wife);	
+		}
+		if(sentence.contains(child)) {
+			familyTreeSet.add(child);	
+		}
+		if(sentence.contains(gurdian)) {
+			familyTreeSet.add(gurdian);	
+		}
+		if(sentence.contains(boy)) {
+			familyTreeSet.add(boy);	
+		}
+		if(sentence.contains(girl)) {
+			familyTreeSet.add(girl);		
+		}
+	}
+
+	//Execute the python script to find the most two common characters
+	//and there appearance count in the book
+	private boolean executeCharacterScriptAndFindMainCharater(List<CoreMap> sentences, double narratorCount, int noOfTokens, int familyTreeLength) {
+		boolean found = FeatureExtractorUtility.getCharacters(sentences);
+		
+		double narratorRatio = (narratorCount/noOfTokens);
+		if(found || narratorRatio > 0.04 || familyTreeLength >= 6) {
+			return true;
+		}
+		return false;
+		
+	}
+
+	//Find main character from the character map and first person words count using coref annotation
+	//Not using because of the performance issue
 	private boolean findMainCharacter(Map<String, List<Integer>> characterMap, double narratorCount, int noOfTokens) {
 		Comparator<Entry<String, List<Integer>>> valueComparator = new Comparator<Entry<String, List<Integer>>>() {
 
@@ -241,8 +349,8 @@ public class WordAttributeGenerator {
 					}
 				}
 				// increase the count based on clusterid
-//				else if (mention.mentionType.equals(MentionType.PRONOMINAL)) {
-//				}
+				else if (mention.mentionType.equals(MentionType.PRONOMINAL)) {
+				}
 			}
 		}
 	}
@@ -271,8 +379,6 @@ public class WordAttributeGenerator {
 			else {
 				newAttributeList.add(2, 3);
 			}
-			//LOG.info("name --- " + name);
-			//LOG.info("attributeList --- " + newAttributeList);
 			characterMap.put(name, newAttributeList);
 		} else {
 			addToCharacterMap(name, mention, characterMap);
@@ -290,8 +396,6 @@ public class WordAttributeGenerator {
 		} else {
 			attributeList.add(2, 1);
 		}
-		//LOG.info("name --- " + name);
-		//LOG.info("attributeList --- " + attributeList);
 		characterMap.put(name, attributeList);
 	}
 

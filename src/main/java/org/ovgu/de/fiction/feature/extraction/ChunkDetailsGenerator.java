@@ -48,10 +48,9 @@ public class ChunkDetailsGenerator {
 	private int BOOK_NO;
 	private int NUM_OF_CHARS_PER_BOOK = -1;
 	private String CONTENT_EXTRCT_FOLDER;
+	private String CONTENT_EXTRCT_FOLDER_DE;
 	StanfordCoreNLP SENTI_PIPELINE;
 	StanfordCoreNLP QUOTE_PIPELINE;
-	StanfordCoreNLP COREF_PIPELINE;
-	private int foundProtagonist = 0;
 
 	protected void init() throws NumberFormatException, IOException {
 
@@ -60,6 +59,8 @@ public class ChunkDetailsGenerator {
 
 		OUT_FOLDER_TOKENS = FRGeneralUtils.getPropertyVal(FRConstants.OUT_FOLDER_TOKENS);
 		CONTENT_EXTRCT_FOLDER = FRGeneralUtils.getPropertyVal(FRConstants.OUT_FOLDER_CONTENT);
+		
+		CONTENT_EXTRCT_FOLDER_DE = FRGeneralUtils.getPropertyVal(FRConstants.OUT_FOLDER_CONTENT_DE);
 
 		LOCATIVE_PREPOSITION_LIST = FRGeneralUtils.getPrepositionList();
 		BOOK_NO = 0;
@@ -67,34 +68,36 @@ public class ChunkDetailsGenerator {
 
 		SENTI_PIPELINE = StanfordPipeline.getPipeline(FRConstants.STNFRD_SENTI_ANNOTATIONS);
 		
-		//QUOTE_PIPELINE = StanfordPipeline.getPipeline(FRConstants.STNFRD_QUOTE_ANNOTATIONS);
-		
-		//COREF_PIPELINE = StanfordPipeline.getPipeline(FRConstants.STNFRD_COREF_ANNOTATIONS);
-
+		QUOTE_PIPELINE = StanfordPipeline.getQuotePipeline();
 	}
 
 	/**
 	 * @return
 	 * @throws IOException
 	 */
-	public List<BookDetails> getChunksFromAllFiles() throws IOException {
+	public List<BookDetails> getChunksFromAllFiles(String local) throws IOException {
 		init();
 
 		List<BookDetails> books = new ArrayList<>();
 		FeatureExtractorUtility feu = new FeatureExtractorUtility();
 		WordAttributeGenerator wag = new WordAttributeGenerator();
 		
+		String contextExtractFolder = CONTENT_EXTRCT_FOLDER;
+		if(local.equals(FRConstants.DE)) {
+			contextExtractFolder = CONTENT_EXTRCT_FOLDER_DE;
+		}
+		
 		// following loop runs, over path of each book
-		FRFileOperationUtils.getFileNames(CONTENT_EXTRCT_FOLDER).stream().forEach(file -> {
+		FRFileOperationUtils.getFileNames(contextExtractFolder).stream().forEach(file -> {
 			String fileName = file.getFileName().toString().replace(FRConstants.CONTENT_FILE, FRConstants.NONE);
          
 			try {
 				BookDetails book = new BookDetails();
-				Concept cncpt = wag.generateWordAttributes(Paths.get(file.toString()));
+				Concept cncpt = wag.generateWordAttributes(Paths.get(file.toString()), local);
 				List<Word> wordlist=cncpt.getWords();
 				book.setBookId(fileName);
 				book.setMetadata(FRGeneralUtils.getMetadata(fileName));
-				book.setChunks(getChunksFromFile(file.toString())); // this is a
+				book.setChunks(getChunksFromFile(file.toString(), local)); // this is a
 																	 // list of
 																	 // chunks,
 																	 // each
@@ -104,7 +107,7 @@ public class ChunkDetailsGenerator {
 																	 // object/vector
 				book.setAverageTTR(feu.getAverageTTR(getEqualChunksFromFile(getTokensFromAllChunks(book.getChunks()))));
 				book.setNumOfChars(NUM_OF_CHARS_PER_BOOK == 0 ? 1 : NUM_OF_CHARS_PER_BOOK);
-				book.setFoundProtagonist(foundProtagonist);
+				book.setFoundProtagonist(cncpt.isProtaganist()?1:0);
 				book.setGenreFeatureScore(feu.getGenreFeatures(wordlist));
 				
 				books.add(book);
@@ -137,7 +140,7 @@ public class ChunkDetailsGenerator {
 	 * @return : List of Chunks, Chunk has a feature vector object
 	 * @throws IOException
 	 */
-	public List<Chunk> getChunksFromFile(String path) throws IOException {
+	public List<Chunk> getChunksFromFile(String path, String locale) throws IOException {
         
 		int batchNumber;
 		List<Chunk> chunksList = new ArrayList<>();
@@ -148,7 +151,7 @@ public class ChunkDetailsGenerator {
 		WordAttributeGenerator wag = new WordAttributeGenerator();
 		FeatureExtractorUtility feu = new FeatureExtractorUtility();
 		List<String> stopwords = Arrays.asList(FRGeneralUtils.getPropertyVal(FRConstants.STOPWORD_FICTION).split("\\|"));
-		Concept cncpt = wag.generateWordAttributes(Paths.get(path)); // this is
+		Concept cncpt = wag.generateWordAttributes(Paths.get(path), locale); // this is
 																	 // a
 																	 // "word-token-pos-ner"
 																	 // list
@@ -159,22 +162,12 @@ public class ChunkDetailsGenerator {
 		// dummu
 
 		for (Entry<String,Integer> c : cncpt.getCharacterMap().entrySet()) {
-			LOG.info(c.getKey()+" "+c.getValue());
+			//LOG.info(c.getKey()+" "+c.getValue());
 		}
-		NUM_OF_CHARS_PER_BOOK = cncpt.getCharacterMap().size();
-		if(cncpt.isProtaganist()) {
-			foundProtagonist = 1;
-		}		
-
+		NUM_OF_CHARS_PER_BOOK = cncpt.getCharacterMap().size();	
 	  			
-		List<Word> wordList = cncpt.getWords();
-		
-		
+		List<Word> wordList = cncpt.getWords();		
 		int numOfSntncPerBook  = cncpt.getNumOfSentencesPerBook();
-		LOG.info(cncpt.getNumOfSentencesPerBook());
-		//System.exit(0);
-		// String fileName =
-		// Paths.get(path).getFileName().toString().replace(Constants.CONTENT_FILE, Constants.NONE);
 
 		ParagraphPredicate filter = new ParagraphPredicate();
 		List<Word> copy = new ArrayList<>(wordList);
@@ -210,13 +203,7 @@ public class ChunkDetailsGenerator {
 		
 		Map<String, List<Integer>> characterMap = new HashMap<>();
 		
-		Properties properties = new Properties();
-		properties.setProperty("annotators", "tokenize,ssplit,pos,lemma,ner,depparse,coref,entitymentions,quote");
-		properties.put("ner.useSUTime", "false ");
-		properties.put("ner.applyNumericClassifiers", "false");
-		properties.put("ner.applyFineGrained", "false");
-		properties.put("parse.model", "edu/stanford/nlp/models/srparser/englishSR.ser.gz");
-		StanfordCoreNLP pipelinee = new StanfordCoreNLP(properties);
+
 		
 	
 		if(batchNumber==0) //very_small_book
@@ -397,11 +384,16 @@ public class ChunkDetailsGenerator {
 			
 			for (String sentence : sentencesList) {
 
-				//Consider only sentences starts with "
-				if (sentence.toString().trim().startsWith("\"")) {
+				//Quotes can be inside "" or '', but quote annotation does not properly identified
+				//quotes within '', therefore replace '' with ""
+				if (!sentence.toString().isBlank()) {
+					
+					if(sentence.contains("'")) {
+						sentence = sentence.replaceAll("'", "\"");
+					}
 					//LOG.info("quoteSentence " + sentence.toString());
 					Annotation quoteAnnotation = new Annotation(sentence);
-					pipelinee.annotate(quoteAnnotation);
+					QUOTE_PIPELINE.annotate(quoteAnnotation);
 
 					List<CoreMap> quotes = quoteAnnotation.get(CoreAnnotations.QuotationsAnnotation.class);
 					if (quotes != null && !quotes.isEmpty()) {
@@ -466,7 +458,7 @@ public class ChunkDetailsGenerator {
 			
 			addToWordCountMap(raw, wordCountPerSntncMap, wordCountPerSntnc);
 			
-			LOG.info(" no of quotes "+ noOfQuotes + "---" + sentenceCount + "---" + speakersSet.size() + "---" + noOfI + "ratio---" + (noOfQuotes/sentenceCount));
+			LOG.info(" no of quotes "+ noOfQuotes + "---" + sentenceCount + "---" + speakersSet.size() + "---" + noOfI + " ratio---" + (noOfQuotes/sentenceCount));
 
 			Chunk chunk = new Chunk();
 			chunk.setChunkNo(chunkNo);
