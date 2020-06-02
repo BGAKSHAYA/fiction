@@ -21,6 +21,7 @@ public interface FRConstants {
 	public static final String CHUNK_SIZE_FOR_TTR = "chunk.ttr.size";
 	public static final String OUT_FOLDER_TOKENS = "folder.out.chunks";
 	public static final String STOPWORD_FICTION = "stopword.fiction";
+	public static final String STOPWORD_FICTION_DE = "stopword.fiction.de";
 	public static final String EN = "en";
 	public static final String DE = "de";
 

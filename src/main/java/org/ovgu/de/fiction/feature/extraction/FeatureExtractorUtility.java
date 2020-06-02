@@ -57,7 +57,7 @@ public class FeatureExtractorUtility {
 	 * @return
 	 * 		The method finds whether a main character found or not
 	 */
-	public static boolean getCharacters(List<CoreMap> sentences) {
+	public static boolean getCharacters(List<CoreMap> sentences, String locale) {
 
 		String path = "bookForCharacter.txt";
 
@@ -74,6 +74,9 @@ public class FeatureExtractorUtility {
 
 		try {
 			Process p = Runtime.getRuntime().exec("python CharacterBook.py " + path);
+			if(locale.equals(FRConstants.DE)) {
+				p = Runtime.getRuntime().exec("python CharacterBookDE.py " + path);
+			}			
 			BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
 			BufferedReader stdError = new BufferedReader(new InputStreamReader(p.getErrorStream()));
 			StringBuffer response = new StringBuffer();

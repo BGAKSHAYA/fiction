@@ -57,9 +57,11 @@ public class WordAttributeGenerator {
 		Annotation document = new Annotation(FRFileOperationUtils.readFile(path.toString()));
 		
 		String charStopWord = FRConstants.CHARACTER_STOPWORD_REGEX;
+		String firstPersonWords = FRConstants.FIRST_PERSON_REGEX;
 		if(locale.equals(FRConstants.DE)) {
 			StanfordPipeline.getGermanPipeline().annotate(document);
 			charStopWord = FRConstants.CHARACTER_STOPWORD_REGEX_DE;
+			firstPersonWords = FRConstants.FIRST_PERSON_REGEX_DE;
 		}
 		else {
 			StanfordPipeline.getPipeline(null).annotate(document);			
@@ -95,7 +97,7 @@ public class WordAttributeGenerator {
 				String lemma = cl.get(CoreAnnotations.LemmaAnnotation.class).toLowerCase();
 				
 				//String originalInLowerCase = original.toLowerCase();
-				if(original.matches(FRConstants.FIRST_PERSON_REGEX)) {
+				if(original.matches(firstPersonWords)) {
 					narratorCount++;
 				}
 				
@@ -145,7 +147,7 @@ public class WordAttributeGenerator {
 		
 		LOG.info(familyTreeSet);
 		LOG.info("narratorCount: " + narratorCount + " tokenList.size(): " + tokenList.size() + " familyTreeSet.size(): " + familyTreeSet.size() + " narrator ratio: " + (narratorCount/tokenList.size()));
-		boolean found = executeCharacterScriptAndFindMainCharater(sentences, narratorCount, tokenList.size(), familyTreeSet.size());
+		boolean found = executeCharacterScriptAndFindMainCharater(sentences, narratorCount, tokenList.size(), familyTreeSet.size(), locale);
 		
 		//findMainCharacter(characterMap, narratorCount,tokenList.size());
 		
@@ -242,8 +244,8 @@ public class WordAttributeGenerator {
 
 	//Execute the python script to find the most two common characters
 	//and there appearance count in the book
-	private boolean executeCharacterScriptAndFindMainCharater(List<CoreMap> sentences, double narratorCount, int noOfTokens, int familyTreeLength) {
-		boolean found = FeatureExtractorUtility.getCharacters(sentences);
+	private boolean executeCharacterScriptAndFindMainCharater(List<CoreMap> sentences, double narratorCount, int noOfTokens, int familyTreeLength, String locale) {
+		boolean found = FeatureExtractorUtility.getCharacters(sentences, locale);
 		
 		double narratorRatio = (narratorCount/noOfTokens);
 		if(found || narratorRatio > 0.04 || familyTreeLength >= 6) {

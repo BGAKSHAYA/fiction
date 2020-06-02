@@ -141,6 +141,11 @@ public class ChunkDetailsGenerator {
 	 * @throws IOException
 	 */
 	public List<Chunk> getChunksFromFile(String path, String locale) throws IOException {
+		
+		String stopWordFiction = FRConstants.STOPWORD_FICTION;
+		if(locale.equals(FRConstants.DE)) {
+			stopWordFiction = FRConstants.STOPWORD_FICTION_DE;
+		}
         
 		int batchNumber;
 		List<Chunk> chunksList = new ArrayList<>();
@@ -150,7 +155,7 @@ public class ChunkDetailsGenerator {
 
 		WordAttributeGenerator wag = new WordAttributeGenerator();
 		FeatureExtractorUtility feu = new FeatureExtractorUtility();
-		List<String> stopwords = Arrays.asList(FRGeneralUtils.getPropertyVal(FRConstants.STOPWORD_FICTION).split("\\|"));
+		List<String> stopwords = Arrays.asList(FRGeneralUtils.getPropertyVal(stopWordFiction).split("\\|"));
 		Concept cncpt = wag.generateWordAttributes(Paths.get(path), locale); // this is
 																	 // a
 																	 // "word-token-pos-ner"
@@ -382,78 +387,100 @@ public class ChunkDetailsGenerator {
 				wordCountPerSntnc++;
 			}
 			
-			for (String sentence : sentencesList) {
+			if(locale.equals(FRConstants.EN)) {
+				for (String sentence : sentencesList) {
 
-				//Quotes can be inside "" or '', but quote annotation does not properly identified
-				//quotes within '', therefore replace '' with ""
-				if (!sentence.toString().isBlank()) {
-					
-					if(sentence.contains("'")) {
-						sentence = sentence.replaceAll("'", "\"");
-					}
-					//LOG.info("quoteSentence " + sentence.toString());
-					Annotation quoteAnnotation = new Annotation(sentence);
-					QUOTE_PIPELINE.annotate(quoteAnnotation);
+					//Quotes can be inside "" or '', but quote annotation does not properly identified
+					//quotes within '', therefore replace '' with ""
+					if (!sentence.toString().isBlank()) {
+						
+						if(sentence.contains("'")) {
+							sentence = sentence.replaceAll("'", "\"");
+						}
+						//LOG.info("quoteSentence " + sentence.toString());
+						Annotation quoteAnnotation = new Annotation(sentence);
+						QUOTE_PIPELINE.annotate(quoteAnnotation);
 
-					List<CoreMap> quotes = quoteAnnotation.get(CoreAnnotations.QuotationsAnnotation.class);
-					if (quotes != null && !quotes.isEmpty()) {
-						for (CoreMap quote : quotes) {
-							noOfQuotes++;
-							//LOG.info("quote-----" + quote);
-							String speaker = quote.get(QuoteAttributionAnnotator.SpeakerAnnotation.class);
-							// LOG.info("speaker-----" + speaker);
-							if (speaker != null && !speaker.isEmpty()) {
-								// noOfSpeakers++;
-								speaker = speaker.trim().toLowerCase();
-								if (speaker.length() <= 10) {
-									speakersSet.add(speaker.toLowerCase());
-								}
-								if (speaker.toLowerCase().equals("i")) {
-									noOfI++;
-								}
-							}
-
-							String sentenceAfterQuote = sentence.substring((quote.toString().length() + 1));
-							// LOG.info("after-----" + sentenceAfterQuote);
-							if (speaker == null && sentenceAfterQuote != null && sentenceAfterQuote.contains("said")) {
-								String said = "";
-								if (sentenceAfterQuote.contains(".") && !sentenceAfterQuote.contains(",")) {
-									said = sentenceAfterQuote.substring(0, sentenceAfterQuote.indexOf("."));
-								}
-								if (sentenceAfterQuote.contains(",") && !sentenceAfterQuote.contains(".")) {
-									said = sentenceAfterQuote.substring(0, sentenceAfterQuote.indexOf(","));
-								}
-								if (sentenceAfterQuote.contains(",") && sentenceAfterQuote.contains(".")) {
-									if (sentenceAfterQuote.indexOf(".") < sentenceAfterQuote.indexOf(",")) {
-										said = sentenceAfterQuote.substring(0, sentenceAfterQuote.indexOf("."));
-									} else {
-										said = sentenceAfterQuote.substring(0, sentenceAfterQuote.indexOf(","));
+						List<CoreMap> quotes = quoteAnnotation.get(CoreAnnotations.QuotationsAnnotation.class);
+						if (quotes != null && !quotes.isEmpty()) {
+							for (CoreMap quote : quotes) {
+								noOfQuotes++;
+								//LOG.info("quote-----" + quote);
+								String speaker = quote.get(QuoteAttributionAnnotator.SpeakerAnnotation.class);
+								// LOG.info("speaker-----" + speaker);
+								if (speaker != null && !speaker.isEmpty()) {
+									// noOfSpeakers++;
+									speaker = speaker.trim().toLowerCase();
+									if (speaker.length() <= 10) {
+										speakersSet.add(speaker.toLowerCase());
 									}
-								}
-								String speaker2 = said.trim().replace("said", "").toLowerCase();
-								// LOG.info("speaker 2 -----" + speaker2);
-								if (speaker2 != null && !speaker2.isEmpty() && speaker2.length() <= 10) {
-									speakersSet.add(speaker2);
-									if (speaker2.trim().equals("i")) {
+									if (speaker.toLowerCase().equals("i")) {
 										noOfI++;
 									}
 								}
-							}
-							// LOG.info("canonical-----" +
-							// quote.get(QuoteAttributionAnnotator.CanonicalMentionAnnotation.class));
 
-							// String mentionType =
-							// quote.get(QuoteAttributionAnnotator.MentionTypeAnnotation.class);
-							// LOG.info("mentionType-----" + mentionType);
-							// String mention =
-							// quote.get(QuoteAttributionAnnotator.MentionAnnotation.class);
-							// LOG.info("mention-----" + mention);
-//						if(speaker!= null && !speaker.equals(mention)){
-//							
-//						}
+								String sentenceAfterQuote = sentence.substring((quote.toString().length() + 1));
+								// LOG.info("after-----" + sentenceAfterQuote);
+								if (speaker == null && sentenceAfterQuote != null && sentenceAfterQuote.contains("said")) {
+									String said = "";
+									if (sentenceAfterQuote.contains(".") && !sentenceAfterQuote.contains(",")) {
+										said = sentenceAfterQuote.substring(0, sentenceAfterQuote.indexOf("."));
+									}
+									if (sentenceAfterQuote.contains(",") && !sentenceAfterQuote.contains(".")) {
+										said = sentenceAfterQuote.substring(0, sentenceAfterQuote.indexOf(","));
+									}
+									if (sentenceAfterQuote.contains(",") && sentenceAfterQuote.contains(".")) {
+										if (sentenceAfterQuote.indexOf(".") < sentenceAfterQuote.indexOf(",")) {
+											said = sentenceAfterQuote.substring(0, sentenceAfterQuote.indexOf("."));
+										} else {
+											said = sentenceAfterQuote.substring(0, sentenceAfterQuote.indexOf(","));
+										}
+									}
+									String speaker2 = said.trim().replace("said", "").toLowerCase();
+									// LOG.info("speaker 2 -----" + speaker2);
+									if (speaker2 != null && !speaker2.isEmpty() && speaker2.length() <= 10) {
+										speakersSet.add(speaker2);
+										if (speaker2.trim().equals("i")) {
+											noOfI++;
+										}
+									}
+								}
+								// LOG.info("canonical-----" +
+								// quote.get(QuoteAttributionAnnotator.CanonicalMentionAnnotation.class));
+
+								// String mentionType =
+								// quote.get(QuoteAttributionAnnotator.MentionTypeAnnotation.class);
+								// LOG.info("mentionType-----" + mentionType);
+								// String mention =
+								// quote.get(QuoteAttributionAnnotator.MentionAnnotation.class);
+								// LOG.info("mention-----" + mention);
+//							if(speaker!= null && !speaker.equals(mention)){
+//								
+//							}
+							}
+						}
+					}
+				}				
+			}
+			else {
+				//For German, German does not not have a QuotesAnnotation, therefore
+				//just counting the "" and ''
+				for (String sentence : sentencesList) {
+
+					//Quotes can be inside "" or '', but quote annotation does not properly identified
+					//quotes within '', therefore replace '' with ""
+					if (!sentence.toString().isBlank()) {						
+						if(sentence.contains("'")) {
+							noOfQuotes++;
+						}
+						if(sentence.contains("\"")) {
+							noOfQuotes++;
 						}
 					}
 				}
+				noOfQuotes = noOfQuotes/2;
+				//To make the size 1
+				speakersSet.add("unknown");
 			}
 			
 			addToWordCountMap(raw, wordCountPerSntncMap, wordCountPerSntnc);
