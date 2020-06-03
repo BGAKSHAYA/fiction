@@ -16,7 +16,7 @@ public interface FRConstants {
 	public static final String OUT_FOLDER_LOCATION_DE = "folder.out.content.de";
 	public static final String WRITE_TOTAL_CONTENT_CONFIG = "write.totalcontent";
 	public static final String OUT_FOLDER_CONTENT = "folder.out.content";
-	public static final String OUT_FOLDER_CONTENT_DE = "folder.out.content";
+	public static final String OUT_FOLDER_CONTENT_DE = "folder.out.content.de";
 	public static final String CHUNK_SIZE = "chunk.size";
 	public static final String CHUNK_SIZE_FOR_TTR = "chunk.ttr.size";
 	public static final String OUT_FOLDER_TOKENS = "folder.out.chunks";
@@ -194,37 +194,37 @@ public interface FRConstants {
 	
 	public static final String CHILDREN = "my children";
 	
-	public static final String FATHER_DE = "mein Vater";
+	public static final String FATHER_DE = "mein vater";
 	
-	public static final String MOTHER_DE = "meine Mutter";
+	public static final String MOTHER_DE = "meine mutter";
 	
-	public static final String SISTER_DE = "meine Schwester";
+	public static final String SISTER_DE = "meine schwester";
 	
-	public static final String BROTHER_DE = "mein Bruder";
+	public static final String BROTHER_DE = "mein bruder";
 	
-	public static final String SON_DE = "mein Sohn";
+	public static final String SON_DE = "mein sohn";
 	
-	public static final String DAUGHTER_DE = "meine Tochter";
+	public static final String DAUGHTER_DE = "meine tochter";
 	
-	public static final String UNCLE_DE = "mein Onkel";
+	public static final String UNCLE_DE = "mein onkel";
 	
-	public static final String AUNTY_DE = "meine Tante";
+	public static final String AUNTY_DE = "meine tante";
 	
-	public static final String MAN_DE = "mein Mann";
+	public static final String MAN_DE = "mein mann";
 	
-	public static final String HUSBAND_DE = "mein Ehemann";
+	public static final String HUSBAND_DE = "mein ehemann";
 	
-	public static final String WIFE_DE = "meine Frau";
+	public static final String WIFE_DE = "meine frau";
 	
-	public static final String CHILD_DE = "mein Kind";
+	public static final String CHILD_DE = "mein kind";
 	
-	public static final String GUARDIAN_DE = "mein Schutzengel";
+	public static final String GUARDIAN_DE = "mein schutzengel";
 	
-	public static final String BOY_DE = "mein Junge";
+	public static final String BOY_DE = "mein junge";
 	
-	public static final String GIRL_DE = "mein Mädchen";
+	public static final String GIRL_DE = "mein mädchen";
 	
-	public static final String CHILDREN_DE = "meine Kinder";
+	public static final String CHILDREN_DE = "meine kinder";
 	
 	/* Similarity related */
 	public static final String SIMILARITY_COSINE = "cosine";
