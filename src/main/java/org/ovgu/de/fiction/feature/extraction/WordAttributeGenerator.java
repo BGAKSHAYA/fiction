@@ -94,7 +94,12 @@ public class WordAttributeGenerator {
 				String original = cl.get(CoreAnnotations.OriginalTextAnnotation.class);
 				String pos = cl.get(CoreAnnotations.PartOfSpeechAnnotation.class);
 				String ner = cl.get(CoreAnnotations.NamedEntityTagAnnotation.class);
-				String lemma = cl.get(CoreAnnotations.LemmaAnnotation.class).toLowerCase();
+				
+				String lemma = "";
+				if(locale.equals(FRConstants.EN)) {
+					lemma = cl.get(CoreAnnotations.LemmaAnnotation.class).toLowerCase();				
+				}
+				
 				
 				//String originalInLowerCase = original.toLowerCase();
 				if(original.matches(firstPersonWords)) {
