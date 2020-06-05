@@ -107,6 +107,8 @@ public interface FRConstants {
 	public static final String TO = "to";
 
 	public static final String DOUBLE_QUOTES = "\"";
+	
+	public static final String SINGLE_QUOTES = "\'";
 
 	public static final String EXCLAMATION = "!";
 

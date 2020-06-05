@@ -382,6 +382,12 @@ public class ChunkDetailsGenerator {
 					intrjctnCount++;
 				else if (token.getLemma().equals(FRConstants.DOUBLE_QUOTES))
 					convCount++;
+				if(locale.equals(FRConstants.DE)) {
+					//since German books have single quotes, considering single quotes
+					if(token.getLemma().equals(FRConstants.SINGLE_QUOTES)) {
+						convCount++;
+					}
+				}
 
 				wordcntr++;
 				wordCountPerSntnc++;
