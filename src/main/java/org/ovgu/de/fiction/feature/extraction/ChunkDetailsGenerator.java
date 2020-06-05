@@ -1,6 +1,9 @@
 package org.ovgu.de.fiction.feature.extraction;
 
+import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,6 +44,8 @@ public class ChunkDetailsGenerator {
 	final static Logger LOG = Logger.getLogger(ChunkDetailsGenerator.class);
 
 	private static Set<String> LOCATIVE_PREPOSITION_LIST;
+	private static Set<String> LOCATIVE_PREPOSITION_LIST_DE;
+
 	protected static Integer CHUNK_SIZE;
 	protected static Integer TTR_CHUNK_SIZE;
 	protected static String OUT_FOLDER_TOKENS;
@@ -63,6 +68,9 @@ public class ChunkDetailsGenerator {
 		CONTENT_EXTRCT_FOLDER_DE = FRGeneralUtils.getPropertyVal(FRConstants.OUT_FOLDER_CONTENT_DE);
 
 		LOCATIVE_PREPOSITION_LIST = FRGeneralUtils.getPrepositionList();
+		
+		LOCATIVE_PREPOSITION_LIST_DE = FRGeneralUtils.getPrepositionListDE();
+
 		BOOK_NO = 0;
 		TIME = System.currentTimeMillis();
 
@@ -75,7 +83,7 @@ public class ChunkDetailsGenerator {
 	 * @return
 	 * @throws IOException
 	 */
-	public List<BookDetails> getChunksFromAllFiles(String local) throws IOException {
+	public List<BookDetails> getChunksFromAllFiles(String locale) throws IOException {
 		init();
 
 		List<BookDetails> books = new ArrayList<>();
@@ -83,21 +91,19 @@ public class ChunkDetailsGenerator {
 		WordAttributeGenerator wag = new WordAttributeGenerator();
 		
 		String contextExtractFolder = CONTENT_EXTRCT_FOLDER;
-		if(local.equals(FRConstants.DE)) {
+		if(locale.equals(FRConstants.DE)) {
 			contextExtractFolder = CONTENT_EXTRCT_FOLDER_DE;
 		}
-		
 		// following loop runs, over path of each book
 		FRFileOperationUtils.getFileNames(contextExtractFolder).stream().forEach(file -> {
 			String fileName = file.getFileName().toString().replace(FRConstants.CONTENT_FILE, FRConstants.NONE);
-         
 			try {
 				BookDetails book = new BookDetails();
-				Concept cncpt = wag.generateWordAttributes(Paths.get(file.toString()), local);
+				Concept cncpt = wag.generateWordAttributes(Paths.get(file.toString()), locale);
 				List<Word> wordlist=cncpt.getWords();
 				book.setBookId(fileName);
 				book.setMetadata(FRGeneralUtils.getMetadata(fileName));
-				book.setChunks(getChunksFromFile(file.toString(), local)); // this is a
+				book.setChunks(getChunksFromFile(file.toString(), locale, cncpt)); // this is a
 																	 // list of
 																	 // chunks,
 																	 // each
@@ -130,17 +136,28 @@ public class ChunkDetailsGenerator {
 		});
 		return books;
 	}
+	
+	public Map<String, String> getSentimentWordList() throws IOException {
+		Map<String, String> sentimentWordList = new HashMap<>();
+		BufferedReader reader = new BufferedReader (new InputStreamReader(new FileInputStream(FRGeneralUtils.getPropertyVal(FRConstants.FILE_GERMAN_SENTIMENT)), "ISO-8859-1"));
+		String nextLine;
+		while((nextLine = reader.readLine() )!= null) {
+		      String[] line = nextLine.split(FRConstants.COMMA);
+		      sentimentWordList.put(line[0], line[1]);
+		}
+		return sentimentWordList;
+	}
 
 	/**
 	 * @author Suhita, Sayantan
-	 * @see - The method generates List of Chunk out of the file passed in the
+	 * @see - The method generates List of Chunk out of the file pass ed in the
 	 *      signature. this path is a path to a single book, mind it!
 	 * @param path
 	 *            to book location
 	 * @return : List of Chunks, Chunk has a feature vector object
 	 * @throws IOException
 	 */
-	public List<Chunk> getChunksFromFile(String path, String locale) throws IOException {
+	public List<Chunk> getChunksFromFile(String path, String locale , Concept cncpt) throws IOException {
 		
 		String stopWordFiction = FRConstants.STOPWORD_FICTION;
 		if(locale.equals(FRConstants.DE)) {
@@ -152,20 +169,10 @@ public class ChunkDetailsGenerator {
 		Annotation annotation = null;
 		//Annotation quoteAnnotation = null;
 		Annotation corefAnnotation = null;
+		Map<String, String> sentimentWordList = getSentimentWordList();
 
-		WordAttributeGenerator wag = new WordAttributeGenerator();
 		FeatureExtractorUtility feu = new FeatureExtractorUtility();
-		List<String> stopwords = Arrays.asList(FRGeneralUtils.getPropertyVal(stopWordFiction).split("\\|"));
-		Concept cncpt = wag.generateWordAttributes(Paths.get(path), locale); // this is
-																	 // a
-																	 // "word-token-pos-ner"
-																	 // list
-																	 // of
-																	 // whole
-																	 // book!
-
-		// dummu
-
+		List<String> stopwords = Arrays.asList(FRGeneralUtils.getPropertyVal(FRConstants.STOPWORD_FICTION).split("\\|"));
 		for (Entry<String,Integer> c : cncpt.getCharacterMap().entrySet()) {
 			//LOG.info(c.getKey()+" "+c.getValue());
 		}
@@ -252,7 +259,6 @@ public class ChunkDetailsGenerator {
 			for (int index = 0; index < chunkSize; index++) {// loop_over_tokens_of_a_given_chunk
 				Word token = wordList.get(wordcntr);
 				String l = token.getLemma();
-
 				
 				if (l.equals(FRConstants.P_TAG)) {
 					//Created a new sentence list using <p> tags for quotation identification as existing sentence 
@@ -282,26 +288,43 @@ public class ChunkDetailsGenerator {
 					
 					if (sentenceSbf.toString().length()>0 && randNum<FRConstants.RANDOM_SENTENCES_SENTIM_MID_VAL && randomSntnCount<totalNumOfRandomSntnPerChunk) { // making_a_random_choice_here
 						// calculateSenti as=>
-						annotation = SENTI_PIPELINE.process(sentenceSbf.toString());
-						int score = 2; // Default as Neutral. 1 = Negative, 2 =
-						// Neutral, 3 = Positive
-						for (CoreMap sentence : annotation.get(CoreAnnotations.SentencesAnnotation.class))// ideally
-						// this
-						// loop
-						// runs
-						// once!
-						{
-							Tree tree = sentence.get(SentimentAnnotatedTree.class);
-							score = RNNCoreAnnotations.getPredictedClass(tree);
+						if(locale.equals(FRConstants.DE)) {
+						      for(String word: sentenceSbf.toString().split(FRConstants.SPACE)) {
+						    	  if(sentimentWordList.containsKey(word)) {
+						    		  String sentimentValue = sentimentWordList.get(word);
+
+						    		  if(sentimentValue.equals(FRConstants.POSITIVE)) {
+											senti_positiv_cnt++;
+						    		  } else if(sentimentValue.equals(FRConstants.NEGATIVE)) {
+											senti_negetiv_cnt++;
+						    		  } else if(sentimentValue.equals(FRConstants.NEUTRAL)) {
+											senti_neutral_cnt++;
+						    		  }
+						    	  }
+						      }
+							
+						} else {
+							annotation = SENTI_PIPELINE.process(sentenceSbf.toString());
+							int score = 2; // Default as Neutral. 1 = Negative, 2 =
+							// Neutral, 3 = Positive
+							for (CoreMap sentence : annotation.get(CoreAnnotations.SentencesAnnotation.class))// ideally
+							// this
+							// loop
+							// runs
+							// once!
+							{
+								Tree tree = sentence.get(SentimentAnnotatedTree.class);
+								score = RNNCoreAnnotations.getPredictedClass(tree);
+							}
+							if (score == 2)
+								senti_neutral_cnt++;
+							if (score == 1)
+								senti_negetiv_cnt++;
+							if (score == 3)
+								senti_positiv_cnt++;
 						}
-						if (score == 2)
-							senti_neutral_cnt++;
-						if (score == 1)
-							senti_negetiv_cnt++;
-						if (score == 3)
-							senti_positiv_cnt++;
-						
 						randomSntnCount++;
+
 					}
 					
 					//cncpt.setNumOfQuotesPerBook(numOfQuotes);
@@ -333,28 +356,41 @@ public class ChunkDetailsGenerator {
 					numOfSyllables += token.getNumOfSyllables();
 					properWordCount++;
 				}
+				// System.out.println(token.getLemma() + "  " + token.getPos());
 				/* calculate pos stats */
-				if (token.getPos().equals(FRConstants.PERSONAL_P)) {
+				if (token.getPos().equals(FRConstants.PERSONAL_P) || token.getPos().equals(FRConstants.PERSONAL_P_DE) ) {
 					personalPronounCount++;
-					if (l.equals(FRConstants.HE))
+					if (l.equals(FRConstants.HE) && locale.equals(FRConstants.EN))
 						malePrpPosPronounCount++;
-					else if (l.equals(FRConstants.SHE))
+					else if (l.equals(FRConstants.SHE)  && locale.equals(FRConstants.EN))
 						femalePrpPosPronounCount++;
-
-				} else if (token.getPos().equals(FRConstants.POSSESIV_P)) {
+					else if(l.equals(FRConstants.SIE)  && locale.equals(FRConstants.DE))
+						femalePrpPosPronounCount++;
+					else if(l.equals(FRConstants.ER) && locale.equals(FRConstants.DE))
+						malePrpPosPronounCount++;
+				} else if (token.getPos().equals(FRConstants.POSSESIV_P) || token.getPos().equals(FRConstants.POSSESIV_P_DE) ) {
 					possPronounCount++;
-					if (l.equals(FRConstants.HE))
+					if (l.equals(FRConstants.HE) && locale.equals(FRConstants.EN))
 						malePrpPosPronounCount++;
-					else if (l.equals(FRConstants.SHE))
+					else if (l.equals(FRConstants.SHE)  && locale.equals(FRConstants.EN))
 						femalePrpPosPronounCount++;
+					else if(l.equals(FRConstants.SIE)  && locale.equals(FRConstants.DE))
+						femalePrpPosPronounCount++;
+					else if(l.equals(FRConstants.ER) && locale.equals(FRConstants.DE))
+						malePrpPosPronounCount++;
 
-				} else if (token.getPos().equals(FRConstants.PREPOSITION)) {
-					if (LOCATIVE_PREPOSITION_LIST.contains(l))
-						locativePrepositionCount++;
-					if (l.equals(FRConstants.IN)) {
-						int temp = wordcntr;
-						if ((l.equals(FRConstants.IN) && wordList.get(++temp).getLemma().equals(FRConstants.FRONT)
-								&& wordList.get(++temp).getLemma().equals(FRConstants.OF)))
+				} else if (token.getPos().equals(FRConstants.PREPOSITION) || token.getPos().equals(FRConstants.PREPOSITION_DE) ) {
+					if(locale.equals(FRConstants.EN)) { 
+						if(LOCATIVE_PREPOSITION_LIST.contains(l))
+							locativePrepositionCount++;
+						if (l.equals(FRConstants.IN)) {
+							int temp = wordcntr;
+							if ((l.equals(FRConstants.IN) && wordList.get(++temp).getLemma().equals(FRConstants.FRONT)
+									&& wordList.get(++temp).getLemma().equals(FRConstants.OF)))
+								locativePrepositionCount++;
+						}
+					} else if(locale.equals(FRConstants.DE)) { 
+						if(LOCATIVE_PREPOSITION_LIST_DE.contains(l))
 							locativePrepositionCount++;
 					}
 
@@ -366,10 +402,12 @@ public class ChunkDetailsGenerator {
 					locativePrepositionCount++;
 				else if (token.getPos().equals(FRConstants.INTERJECTION))
 					intrjctnCount++;
-				else if (token.getPos().equals(FRConstants.COORD_CONJUNCTION))
+				else if (token.getPos().equals(FRConstants.COORD_CONJUNCTION) || (locale.equals(FRConstants.DE)  && token.getPos().equals(FRConstants.COORD_CONJUNCTION_DE)))
 					coordConj++;
-				else if (token.getLemma().equals(FRConstants.COMMA))
+				else if (token.getLemma().equals(FRConstants.COMMA)) {
 					commaCount++;
+                    
+				}
 				else if (token.getLemma().equals(FRConstants.PERIOD)) {
 					periodCount++;
 				} else if (token.getLemma().equals(FRConstants.COLON))
@@ -398,7 +436,7 @@ public class ChunkDetailsGenerator {
 
 					//Quotes can be inside "" or '', but quote annotation does not properly identified
 					//quotes within '', therefore replace '' with ""
-					if (!sentence.toString().isBlank()) {
+					if (!sentence.toString().isEmpty()) {
 						
 						if(sentence.contains("'")) {
 							sentence = sentence.replaceAll("'", "\"");
@@ -421,7 +459,7 @@ public class ChunkDetailsGenerator {
 										speakersSet.add(speaker.toLowerCase());
 									}
 									if (speaker.toLowerCase().equals("i")) {
-										noOfI++;
+										noOfI++; 
 									}
 								}
 
@@ -475,7 +513,7 @@ public class ChunkDetailsGenerator {
 
 					//Quotes can be inside "" or '', but quote annotation does not properly identified
 					//quotes within '', therefore replace '' with ""
-					if (!sentence.toString().isBlank()) {						
+					if (!sentence.toString().isEmpty()) {						
 						if(sentence.contains("'")) {
 							noOfQuotes++;
 						}
@@ -491,7 +529,7 @@ public class ChunkDetailsGenerator {
 			
 			addToWordCountMap(raw, wordCountPerSntncMap, wordCountPerSntnc);
 			
-			LOG.info(" no of quotes "+ noOfQuotes + "---" + sentenceCount + "---" + speakersSet.size() + "---" + noOfI + " ratio---" + (noOfQuotes/sentenceCount));
+			// LOG.info(" no of quotes "+ noOfQuotes + "---" + sentenceCount + "---" + speakersSet.size() + "---" + noOfI + " ratio---" + (noOfQuotes/sentenceCount));
 
 			Chunk chunk = new Chunk();
 			chunk.setChunkNo(chunkNo);
@@ -503,8 +541,7 @@ public class ChunkDetailsGenerator {
 			// chunk.setChunkFileLocation(chunkFileName);
 			// }
 			
-			
-			System.out.println("numbr of sentences for sentiment  ="+randomSntnCount+" for chunknum ="+chunkNo+", and total sentc  ="+numOfSntncPerBook+" for book path "+path);
+			//System.out.println("numbr of sentences for sentiment  ="+randomSntnCount+" for chunknum ="+chunkNo+", and total sentc  ="+numOfSntncPerBook+" for book path "+path);
 			chunk.setTokenListWithoutStopwordAndPunctuation(stpwrdPuncRmvd);
 			Feature feature = feu.generateFeature(chunkNo, paragraphCount, sentenceCount, raw, null, stpwrdPuncRmvd, malePrpPosPronounCount,
 					femalePrpPosPronounCount, personalPronounCount, possPronounCount, locativePrepositionCount, coordConj, commaCount,
@@ -525,6 +562,7 @@ public class ChunkDetailsGenerator {
 		return chunksList;
 	}
 
+	
 	public void addToWordCountMap(List<Word> raw, Map<Integer, Integer> wordCountPerSntncMap, int wordCount) {
 		wordCountPerSntncMap.put(wordCount, !wordCountPerSntncMap.containsKey(wordCount) ? 1 : wordCountPerSntncMap.get(wordCount) + 1);
 	}
@@ -565,28 +603,28 @@ public class ChunkDetailsGenerator {
 
 			chunkSize = batchCtr < batchNumber ? TTR_CHUNK_SIZE : remainder;
 			for (int index = 0; index < chunkSize; index++) {
-
-				String token = tokens.get(wordcntr);
-				textTokens.add(token);
-
-				if (batchCtr == 0 && wordcntr < (TTR_CHUNK_SIZE - remainder)) // tokens
-																				 // to
-																				 // be
-																				 // appended
-																				 // to
-																				 // the
-																				 // last
-																				 // chunk,
-																				 // to
-																				 // make
-																				 // it
-																				 // equal
-																				 // sized
-																				 // as
-																				 // CHUNK_SIZE
-				{
-					appendAtEnd.add(token);
-				}
+					String token = tokens.get(wordcntr);
+					textTokens.add(token);
+	
+					if (batchCtr == 0 && wordcntr < (TTR_CHUNK_SIZE - remainder)) // tokens
+																					 // to
+																					 // be
+																					 // appended
+																					 // to
+																					 // the
+																					 // last
+																					 // chunk,
+																					 // to
+																					 // make
+																					 // it
+																					 // equal
+																					 // sized
+																					 // as
+																					 // CHUNK_SIZE
+					{
+						appendAtEnd.add(token);
+					}
+				
 				wordcntr++;
 			}
 

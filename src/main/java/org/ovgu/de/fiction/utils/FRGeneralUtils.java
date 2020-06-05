@@ -108,6 +108,18 @@ public class FRGeneralUtils {
 		return prepList;
 	}
 	
+	public static Set<String> getPrepositionListDE() {
+
+		Set<String> prepList = new HashSet<>();
+		prepList.add("um");
+		prepList.add("aus");
+		prepList.add("mit");
+		prepList.add("nach");
+		prepList.add("von");
+		prepList.add("für");
+		return prepList;
+	}
+	
 	public static int countSyllables(String word)
     {
         char[] vowels = { 'a', 'e', 'i', 'o', 'u', 'y' };

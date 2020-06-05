@@ -53,7 +53,7 @@ public class WordAttributeGenerator {
 
 		FeatureExtractorUtility feu = new FeatureExtractorUtility();
 		Concept cncpt = new Concept();
-		LOG.info(path.toString());
+		// LOG.info(path.toString());
 		Annotation document = new Annotation(FRFileOperationUtils.readFile(path.toString()));
 		
 		String charStopWord = FRConstants.CHARACTER_STOPWORD_REGEX;
@@ -73,7 +73,7 @@ public class WordAttributeGenerator {
 														 // book // Book
 		StringBuffer charName = new StringBuffer();
 		int numOfSyllables = 0;
-		int numOfSentences =0;
+		int numOfSentences = 0;
 		double narratorCount = 0;
 		Set<String> familyTreeSet = new HashSet<String>();
 		Map<String, List<Integer>> characterMap = new HashMap<>();
@@ -121,7 +121,6 @@ public class WordAttributeGenerator {
 					else
 						charName.append(FRConstants.SPACE).append(original.toLowerCase());
 				} else if (!ner.equals(FRConstants.NER_CHARACTER) && charName.length() != 0) {
-
 					// calculate for character
 					numOfSyllables = FRGeneralUtils.countSyllables(charName.toString().toLowerCase());
 					addToTokenList(tokenList, charName.toString(), NNP, FRConstants.NER_CHARACTER, charName.toString(), numOfSyllables);
@@ -153,8 +152,8 @@ public class WordAttributeGenerator {
 //			}
 		}
 		
-		LOG.info(familyTreeSet);
-		LOG.info("narratorCount: " + narratorCount + " tokenList.size(): " + tokenList.size() + " familyTreeSet.size(): " + familyTreeSet.size() + " narrator ratio: " + (narratorCount/tokenList.size()));
+		//LOG.info(familyTreeSet);
+		//LOG.info("narratorCount: " + narratorCount + " tokenList.size(): " + tokenList.size() + " familyTreeSet.size(): " + familyTreeSet.size() + " narrator ratio: " + (narratorCount/tokenList.size()));
 		boolean found = executeCharacterScriptAndFindMainCharater(sentences, narratorCount, tokenList.size(), familyTreeSet.size(), locale);
 		
 		//findMainCharacter(characterMap, narratorCount,tokenList.size());
@@ -287,8 +286,8 @@ public class WordAttributeGenerator {
 		int count=1;
 		for (Entry<String, List<Integer>> entry : listOfEntries) {
 			sortedByValue.put(entry.getKey(), entry.getValue());
-			LOG.info(entry.getKey());
-			LOG.info(entry.getValue());
+			// LOG.info(entry.getKey());
+			// LOG.info(entry.getValue());
 			if(count==1) {
 				one = entry.getValue().get(0);
 			}

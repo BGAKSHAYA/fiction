@@ -384,17 +384,20 @@ public class InterpretSearchResults {
 			        }
 			 	}	
 				 Map<String, double[]> bookChunks =  corpus.getValue();
-				 	for(Map.Entry<String, double[]> chunks: bookChunks.entrySet()){//loop_over_all_chunks_of_a_given_book
-				 		double[] final_chunk_vector = new double[FRConstants.FEATURE_NUMBER + 1];
+			 	 double[] final_chunk_vector = new double[FRConstants.FEATURE_NUMBER + 1];
+
+				 for(Map.Entry<String, double[]> chunks: bookChunks.entrySet()){//loop_over_all_chunks_of_a_given_book
 				 		double[] chunk_vector = chunks.getValue();
 				 		 for(int i=0;i<chunk_vector.length;i++){
-					 			final_chunk_vector[i] = chunk_vector[i];
-					 			//System.out.print(final_chunk_vector + " " + chunk_vector[i]);
+					 			final_chunk_vector[i] += chunk_vector[i];
 					 	 }
-				 		final_chunk_vector[FRConstants.FEATURE_NUMBER] = weight;
-				 		//System.out.println(final_chunk_vector);
-				 		searched_result_bins.add(final_chunk_vector);
-				 }		 
+				 }
+				 int noOfChunks = bookChunks.entrySet().size();
+				 for(int i=0; i<final_chunk_vector.length-1; i++) {
+					 final_chunk_vector[i] = Math.round(final_chunk_vector[i]/ noOfChunks *  10000.0000) / 10000.0000;
+				 }
+			 		final_chunk_vector[FRConstants.FEATURE_NUMBER] = weight;
+			 		searched_result_bins.add(final_chunk_vector);
 			 }
 		}
 		return searched_result_bins;

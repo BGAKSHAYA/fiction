@@ -97,7 +97,7 @@ public class FeatureExtractorUtility {
 					res = response.toString();
 				}
 				alreadyWaited = true;
-				System.out.println(response.toString() + errorStr.toString());
+				// System.out.println(response.toString() + errorStr.toString());
 
 			}
 
@@ -159,7 +159,7 @@ public class FeatureExtractorUtility {
                     res=response.toString();
                 }
                 alreadyWaited = true;
-                System.out.println(response.toString() + errorStr.toString());  
+                // System.out.println(response.toString() + errorStr.toString());  
 
         }
      
@@ -169,7 +169,7 @@ public class FeatureExtractorUtility {
     	
     	genreResponse[i] = Double.parseDouble(genreFeatures[i]);
     }
-    System.out.println(genreFeatures.length);
+    //System.out.println(genreFeatures.length);
 
     } catch (IOException e) {
          System.out.print(e);    
@@ -578,7 +578,7 @@ public class FeatureExtractorUtility {
 				}
 			}
 		}
-	//	System.out.println(" out edits ="+charMapClone);
+	    // System.out.println(" out edits ="+charMapClone);
 		return charMapClone;
 	}
 

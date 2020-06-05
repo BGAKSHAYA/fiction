@@ -51,7 +51,7 @@ def reomveHtmlTags(raw_html):
   return cleantext
 
 filename = "bookWordList.txt"
-with open(filename, 'r') as file:
+with open(filename, 'r', encoding='utf8') as file:
     book_data = file.read().replace('\n', ' ')
     book_data= reomveHtmlTags(book_data)
     

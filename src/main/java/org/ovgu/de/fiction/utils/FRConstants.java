@@ -14,6 +14,7 @@ public interface FRConstants {
 	public static final String EPUB_FOLDER_DE = "folder.in.epub.de";
 	public static final String OUT_FOLDER_LOCATION = "folder.out.content";
 	public static final String OUT_FOLDER_LOCATION_DE = "folder.out.content.de";
+	public static final String FILE_GERMAN_SENTIMENT = "file.german.sentiment";
 	public static final String WRITE_TOTAL_CONTENT_CONFIG = "write.totalcontent";
 	public static final String OUT_FOLDER_CONTENT = "folder.out.content";
 	public static final String OUT_FOLDER_CONTENT_DE = "folder.out.content.de";
@@ -129,6 +130,9 @@ public interface FRConstants {
 	public static final String FILE_HEADER_RES_CSV = "bookId_RowNum,F0,F1,F2,F3,F4,F5,F6,F7,F8,F9,F10,F11,F12,F13,F14,F15,F16,F17,F18,F19,F20,F21,F22,F23,F24,F25,F26,F27,F28,F29,F30,F31,F32,F33,F34,Class";
 	
 	public static final String COORD_CONJUNCTION = "CC";
+	
+	public static final String COORD_CONJUNCTION_DE = "CCONJ";
+
 
 	public static final String INTERJECTION = "UH";
 
@@ -145,14 +149,25 @@ public interface FRConstants {
 	public static final String IN = "in";
 
 	public static final String PREPOSITION = "IN";
+	
+	public static final String PREPOSITION_DE = "ADP";
 
 	public static final String POSSESIV_P = "PRP$";
+	
+	public static final String POSSESIV_P_DE = "DET";
+
 
 	public static final String SHE = "she";
 
 	public static final String HE = "he";
+	
+	public static final String SIE ="sie";
+	
+	public static final String ER ="er";
 
-	public static final String PERSONAL_P = "PRP";
+	public static final String PERSONAL_P= "PRP";
+
+	public static final String PERSONAL_P_DE = "PRON";
 
 	public static final String NER_CHARACTER = "PERSON";
 
@@ -324,6 +339,14 @@ public interface FRConstants {
 	public static final int PARAGRAPH_COUNT_0 = 0;
 	
 	public static final String O = "O";
+	
+	/* Sentiment related*/
+	public static final String POSITIVE = "positive";
+	public static final String NEGATIVE = "negative";
+	public static final String NEUTRAL = "neutral";
+
+	
+	
 	
 
 }
