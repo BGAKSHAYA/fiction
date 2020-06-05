@@ -99,7 +99,10 @@ public class WordAttributeGenerator {
 				if(locale.equals(FRConstants.EN)) {
 					lemma = cl.get(CoreAnnotations.LemmaAnnotation.class).toLowerCase();				
 				}
-				
+				else {
+					//German does not support lemma
+					lemma = original;
+				}
 				
 				//String originalInLowerCase = original.toLowerCase();
 				if(original.matches(firstPersonWords)) {
