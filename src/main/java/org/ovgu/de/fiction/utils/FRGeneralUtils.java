@@ -89,9 +89,12 @@ public class FRGeneralUtils {
 
 	}
 
-	public static Metadata getMetadata(String fileName) throws IOException {
+	public static Metadata getMetadata(String fileName, String locale) throws IOException {
 		EpubReader epubReader = new EpubReader();
-		String EPUB_FOLDER = FRGeneralUtils.getPropertyVal(FRConstants.EPUB_FOLDER);
+		String EPUB_FOLDER = FRGeneralUtils.getPropertyVal(FRConstants.EPUB_FOLDER);;
+		if(locale.equals(FRConstants.DE)) {
+			EPUB_FOLDER = FRGeneralUtils.getPropertyVal(FRConstants.EPUB_FOLDER_DE);
+		}
 		Book book = epubReader.readEpub(new FileInputStream(EPUB_FOLDER + "/" + fileName + FRConstants.EPUB_EXTN));
 		return book.getMetadata();
 	}
