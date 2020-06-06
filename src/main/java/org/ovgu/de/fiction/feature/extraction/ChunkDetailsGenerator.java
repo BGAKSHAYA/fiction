@@ -102,7 +102,7 @@ public class ChunkDetailsGenerator {
 				Concept cncpt = wag.generateWordAttributes(Paths.get(file.toString()), locale);
 				List<Word> wordlist=cncpt.getWords();
 				book.setBookId(fileName);
-				book.setMetadata(FRGeneralUtils.getMetadata(fileName));
+				book.setMetadata(FRGeneralUtils.getMetadata(fileName, locale));
 				book.setChunks(getChunksFromFile(file.toString(), locale, cncpt)); // this is a
 																	 // list of
 																	 // chunks,
