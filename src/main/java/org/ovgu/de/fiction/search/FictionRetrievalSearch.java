@@ -6,12 +6,15 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.ovgu.de.fiction.model.TopKResults;
 import org.ovgu.de.fiction.utils.FRConstants;
+import org.ovgu.de.fiction.utils.FRFileOperationUtils;
 import org.ovgu.de.fiction.utils.FRSimilarityUtils;
 
 /**
@@ -257,5 +260,51 @@ public class FictionRetrievalSearch {
 		chunkFeatureMap.put(chunkNo, feature_array);
 		bookFeatureMap.put(bookName, chunkFeatureMap);
 		return bookFeatureMap;
+	}
+	
+	public static TopKResults pickNRandom(int topK) {
+		List<String> bookList = FRFileOperationUtils.readCsvForBookNames();
+		SortedMap<Double, String> results = new TreeMap<Double, String>();
+
+		List<String> copy = new LinkedList<String>(bookList);
+		Collections.shuffle(copy);
+
+		for (String book : copy.subList(0, topK)) {
+			results.put(0.00, book);
+		}
+		TopKResults topKResults = new TopKResults();
+		topKResults.setResults_topK(results);
+		;
+		return topKResults;
+	}
+
+	public static TopKResults pickFromBOWModel(String querybook, int topK) {
+		SortedMap<Double, String> sorted_results = new TreeMap<Double, String>(Collections.reverseOrder());
+		// Read the csv generated from TF-IDF
+		Map<String, double[]> valueMap = FRFileOperationUtils.readCsvForBOW();
+
+		// Calculate l2 similarity
+		for (String book : valueMap.keySet()) {
+			Double l2Similarity = calculateL2Similarity(valueMap.get(querybook), valueMap.get(book));
+			sorted_results.put(l2Similarity, book);
+		}
+
+		TopKResults topKResults = new TopKResults();
+		topKResults.setResults_topK(sorted_results);
+		return topKResults;
+	}
+
+	public static double calculateL2Similarity(double[] docVector1, double[] docVector2) {
+		double dist_meas_values = 0.0;
+
+		for (int i = 0; i < docVector1.length; i++) // docVector1 and docVector2 must be of same length
+		{
+			dist_meas_values = dist_meas_values + Math.pow(docVector1[i] - docVector2[i], 2); // (x1-x2)^2
+		}
+
+		dist_meas_values = Math.sqrt(dist_meas_values);
+		dist_meas_values = 1 / (1 + dist_meas_values);
+
+		return dist_meas_values;
 	}
 }
