@@ -268,13 +268,14 @@ public class FictionRetrievalSearch {
 
 		List<String> copy = new LinkedList<String>(bookList);
 		Collections.shuffle(copy);
-
+		
+		int i = 1;
 		for (String book : copy.subList(0, topK)) {
-			results.put(0.00, book);
+			results.put(new Double(i), book);
+			i++;
 		}
 		TopKResults topKResults = new TopKResults();
 		topKResults.setResults_topK(results);
-		;
 		return topKResults;
 	}
 

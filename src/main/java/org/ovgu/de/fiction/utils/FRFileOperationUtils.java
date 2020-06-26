@@ -86,7 +86,7 @@ public class FRFileOperationUtils {
 			while ((line = br.readLine()) != null) {
 
 				String[] valueArray = line.split(cvsSplitBy);
-				double[] doubleValueArray = new double[50];
+				double[] doubleValueArray = new double[154474];
 				for (int i = 1; i < valueArray.length; i++) {
 					doubleValueArray[i - 1] = Double.valueOf(valueArray[i]);
 				}
@@ -104,18 +104,13 @@ public class FRFileOperationUtils {
 	public static List<String> readCsvForBookNames() {
 		BufferedReader br = null;
 		String line = "";
-		String cvsSplitBy = ",";
 		List<String> bookList = new ArrayList<String>();
 
 		try {
-			br = new BufferedReader(new FileReader(FRGeneralUtils.getPropertyVal("file.bow.feature")));
+			br = new BufferedReader(new FileReader(FRGeneralUtils.getPropertyVal("file.book.names")));
 			br.readLine();
 			while ((line = br.readLine()) != null) {
-
-				String[] valueArray = line.split(cvsSplitBy);
-				for (int i = 1; i < valueArray.length; i++) {
-					bookList.add(valueArray[0]);
-				}
+					bookList.add(line);
 			}
 			br.close();
 		} catch (FileNotFoundException e) {
