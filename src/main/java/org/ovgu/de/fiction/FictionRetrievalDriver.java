@@ -12,10 +12,14 @@ import org.ovgu.de.fiction.search.FictionRetrievalSearch;
 import org.ovgu.de.fiction.search.InterpretSearchResults;
 import org.ovgu.de.fiction.utils.FRConstants;
 import org.ovgu.de.fiction.utils.FRGeneralUtils;
-import org.springframework.boot.*;
-import org.springframework.boot.autoconfigure.*;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.web.SpringBootServletInitializer;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * @author Suhita, Sayantan
@@ -37,15 +41,25 @@ public class FictionRetrievalDriver extends SpringBootServletInitializer{
         return topKResults.getResults_topK().toString() + "-" +	interp.performStatiscalAnalysisUsingRegression(topKResults).toString();
     }
     
-    @RequestMapping(method = RequestMethod.GET)
-    String getTopKResultsGet(@RequestParam String bookID) throws Exception {
-		TopKResults topKResults = FictionRetrievalSearch.findRelevantBooks(bookID, FRGeneralUtils.getPropertyVal("file.feature") , 
-				FRConstants.SIMI_PENALISE_BY_CHUNK_NUMS, FRConstants.SIMI_ROLLUP_BY_ADDTN, 
-				FRConstants.SIMI_EXCLUDE_TTR_NUMCHARS,FRConstants.TOP_K_RESULTS,FRConstants.SIMILARITY_L2);	
-		
+	@RequestMapping(method = RequestMethod.GET)
+	String getTopKResultsGet(@RequestParam String bookID, @RequestParam String systemName) throws Exception {
+
+		TopKResults topKResults = null;
+		if (systemName.equals(FRConstants.BAG_OF_WORDS)) {
+			topKResults = FictionRetrievalSearch.pickFromBOWModel(bookID, FRConstants.TOP_K_RESULTS);
+		} else if (systemName.equals(FRConstants.RANDOM)) {
+			topKResults = FictionRetrievalSearch.pickNRandom(FRConstants.TOP_K_RESULTS);
+		} else {
+			topKResults = FictionRetrievalSearch.findRelevantBooks(bookID,
+					FRGeneralUtils.getPropertyVal("file.feature"), FRConstants.SIMI_PENALISE_BY_CHUNK_NUMS,
+					FRConstants.SIMI_ROLLUP_BY_ADDTN, FRConstants.SIMI_EXCLUDE_TTR_NUMCHARS, FRConstants.TOP_K_RESULTS,
+					FRConstants.SIMILARITY_L2);
+		}
+
 		InterpretSearchResults interp = new InterpretSearchResults();
-        return topKResults.getResults_topK().toString() + "-" +	interp.performStatiscalAnalysisUsingRegression(topKResults).toString();
-    }
+		return topKResults.getResults_topK().toString() + "-"
+				+ interp.performStatiscalAnalysisUsingRegression(topKResults).toString();
+	}
 
 	public static void main(String[] args) throws Exception {
         //SpringApplication.run(FictionRetrievalDriver.class, args);

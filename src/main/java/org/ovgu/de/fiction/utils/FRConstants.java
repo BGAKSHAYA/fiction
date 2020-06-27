@@ -250,6 +250,13 @@ public interface FRConstants {
 
 	public static final String SIMILARITY_L2 = "L2";
 	
+	/* System related */
+	public static final String BAG_OF_WORDS = "bofwords";
+
+	public static final String RANDOM = "random";
+
+	public static final String SIMFIC2 = "simfic2";
+	
 	public static final String SIMI_PENALISE_BY_CHUNK_NUMS="LEN";
 	public static final String SIMI_PENALISE_BY_NOTHING="NOT";
 	public static final String SIMI_PENALISE_BY_CHUNK_SQR_ROOT="SQR";
