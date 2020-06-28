@@ -84,7 +84,7 @@ public class FRFileOperationUtils {
 		try {
 			if(language.equalsIgnoreCase("en")) {
 				br = new BufferedReader(new FileReader(FRGeneralUtils.getPropertyVal("file.bow.feature")));
-				dimentions = 154474;
+				dimentions = 143714;
 			}
 			else {
 				br = new BufferedReader(new FileReader(FRGeneralUtils.getPropertyVal("file.bow.feature.de")));
