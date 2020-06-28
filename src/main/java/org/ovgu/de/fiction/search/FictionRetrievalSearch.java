@@ -15,6 +15,7 @@ import java.util.TreeMap;
 import org.ovgu.de.fiction.model.TopKResults;
 import org.ovgu.de.fiction.utils.FRConstants;
 import org.ovgu.de.fiction.utils.FRFileOperationUtils;
+import org.ovgu.de.fiction.utils.FRGeneralUtils;
 import org.ovgu.de.fiction.utils.FRSimilarityUtils;
 
 /**
@@ -291,7 +292,7 @@ public class FictionRetrievalSearch {
 		}
 
 		TopKResults topKResults = new TopKResults();
-		topKResults.setResults_topK(sorted_results);
+		topKResults.setResults_topK(FRGeneralUtils.putFirstEntries(topK, sorted_results));
 		return topKResults;
 	}
 

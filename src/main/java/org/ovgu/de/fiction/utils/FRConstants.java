@@ -288,7 +288,7 @@ public interface FRConstants {
 	public static final double DATA_DISTRIB_40_PERCENT  = 0.4;
 	public static final double DATA_DISTRIB_DIFFER_CUTOFF  = 0.01;
 	
-	public static final int TOP_K_RESULTS = 25;
+	public static final int TOP_K_RESULTS = 10;
 
 	/* feature related */
 	public static final int LEAVE_LAST_K_ELEMENTS_OF_FEATURE = 3; //exclude 2 global elements (TTR, NUM_Chars, Protagonist) from

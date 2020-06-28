@@ -4,10 +4,14 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -166,5 +170,17 @@ public class FRGeneralUtils {
 
         return numVowels;
     }
+	
+	public static SortedMap<Double,String> putFirstEntries(int max, SortedMap<Double,String> source) {
+		  int count = 0;
+		  SortedMap<Double,String> target = new TreeMap<Double, String>(Collections.reverseOrder());
+		  for (Map.Entry<Double,String> entry:source.entrySet()) {
+		     if (count >= max) break;
+
+		     target.put(entry.getKey(), entry.getValue());
+		     count++;
+		  }
+		  return target;
+		}
 
 }
