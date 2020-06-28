@@ -42,18 +42,31 @@ public class FictionRetrievalDriver extends SpringBootServletInitializer{
     }
     
 	@RequestMapping(method = RequestMethod.GET)
-	String getTopKResultsGet(@RequestParam String bookID, @RequestParam String systemName) throws Exception {
+	String getTopKResultsGet(@RequestParam String bookID,  @RequestParam String language, @RequestParam String systemName) throws Exception {
 
 		TopKResults topKResults = null;
-		if (systemName.equals(FRConstants.BAG_OF_WORDS)) {
-			topKResults = FictionRetrievalSearch.pickFromBOWModel(bookID, FRConstants.TOP_K_RESULTS);
-		} else if (systemName.equals(FRConstants.RANDOM)) {
-			topKResults = FictionRetrievalSearch.pickNRandom(FRConstants.TOP_K_RESULTS);
+		if (language.equalsIgnoreCase("en")) {
+			if (systemName.equals(FRConstants.BAG_OF_WORDS)) {
+				topKResults = FictionRetrievalSearch.pickFromBOWModel(bookID, FRConstants.TOP_K_RESULTS, language);
+			} else if (systemName.equals(FRConstants.RANDOM)) {
+				topKResults = FictionRetrievalSearch.pickNRandom(FRConstants.TOP_K_RESULTS, language);
+			} else {
+				topKResults = FictionRetrievalSearch.findRelevantBooks(bookID,
+						FRGeneralUtils.getPropertyVal("file.feature"), FRConstants.SIMI_PENALISE_BY_CHUNK_NUMS,
+						FRConstants.SIMI_ROLLUP_BY_ADDTN, FRConstants.SIMI_EXCLUDE_TTR_NUMCHARS,
+						FRConstants.TOP_K_RESULTS, FRConstants.SIMILARITY_L2);
+			}
 		} else {
-			topKResults = FictionRetrievalSearch.findRelevantBooks(bookID,
-					FRGeneralUtils.getPropertyVal("file.feature"), FRConstants.SIMI_PENALISE_BY_CHUNK_NUMS,
-					FRConstants.SIMI_ROLLUP_BY_ADDTN, FRConstants.SIMI_EXCLUDE_TTR_NUMCHARS, FRConstants.TOP_K_RESULTS,
-					FRConstants.SIMILARITY_L2);
+			if (systemName.equals(FRConstants.BAG_OF_WORDS)) {
+				topKResults = FictionRetrievalSearch.pickFromBOWModel(bookID, FRConstants.TOP_K_RESULTS, language);
+			} else if (systemName.equals(FRConstants.RANDOM)) {
+				topKResults = FictionRetrievalSearch.pickNRandom(FRConstants.TOP_K_RESULTS, language);
+			} else {
+				topKResults = FictionRetrievalSearch.findRelevantBooks(bookID,
+						FRGeneralUtils.getPropertyVal("file.feature.de"), FRConstants.SIMI_PENALISE_BY_CHUNK_NUMS,
+						FRConstants.SIMI_ROLLUP_BY_ADDTN, FRConstants.SIMI_EXCLUDE_TTR_NUMCHARS,
+						FRConstants.TOP_K_RESULTS, FRConstants.SIMILARITY_L2);
+			}
 		}
 
 		InterpretSearchResults interp = new InterpretSearchResults();

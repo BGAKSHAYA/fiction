@@ -262,8 +262,8 @@ public class FictionRetrievalSearch {
 		return bookFeatureMap;
 	}
 	
-	public static TopKResults pickNRandom(int topK) {
-		List<String> bookList = FRFileOperationUtils.readCsvForBookNames();
+	public static TopKResults pickNRandom(int topK, String language) {
+		List<String> bookList = FRFileOperationUtils.readCsvForBookNames(language);
 		SortedMap<Double, String> results = new TreeMap<Double, String>();
 
 		List<String> copy = new LinkedList<String>(bookList);
@@ -279,10 +279,10 @@ public class FictionRetrievalSearch {
 		return topKResults;
 	}
 
-	public static TopKResults pickFromBOWModel(String querybook, int topK) {
+	public static TopKResults pickFromBOWModel(String querybook, int topK, String language) {
 		SortedMap<Double, String> sorted_results = new TreeMap<Double, String>(Collections.reverseOrder());
 		// Read the csv generated from TF-IDF
-		Map<String, double[]> valueMap = FRFileOperationUtils.readCsvForBOW();
+		Map<String, double[]> valueMap = FRFileOperationUtils.readCsvForBOW(language);
 
 		// Calculate l2 similarity
 		for (String book : valueMap.keySet()) {

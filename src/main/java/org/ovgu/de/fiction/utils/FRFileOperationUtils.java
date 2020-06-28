@@ -74,19 +74,27 @@ public class FRFileOperationUtils {
 		return "";
 	}
 	
-	public static Map<String, double[]> readCsvForBOW() {
+	public static Map<String, double[]> readCsvForBOW(String language) {
 		BufferedReader br = null;
 		String line = "";
 		String cvsSplitBy = ",";
 		Map<String, double[]> valueMap = new HashMap<String, double[]>();
+		int dimentions = 0;
 
 		try {
-			br = new BufferedReader(new FileReader(FRGeneralUtils.getPropertyVal("file.bow.feature")));
+			if(language.equalsIgnoreCase("en")) {
+				br = new BufferedReader(new FileReader(FRGeneralUtils.getPropertyVal("file.bow.feature")));
+				dimentions = 154474;
+			}
+			else {
+				br = new BufferedReader(new FileReader(FRGeneralUtils.getPropertyVal("file.bow.feature.de")));
+				dimentions = 454848;
+			}
 			br.readLine();
 			while ((line = br.readLine()) != null) {
 
 				String[] valueArray = line.split(cvsSplitBy);
-				double[] doubleValueArray = new double[154474];
+				double[] doubleValueArray = new double[dimentions];
 				for (int i = 1; i < valueArray.length; i++) {
 					doubleValueArray[i - 1] = Double.valueOf(valueArray[i]);
 				}
@@ -101,13 +109,18 @@ public class FRFileOperationUtils {
 		return valueMap;
 	}
 
-	public static List<String> readCsvForBookNames() {
+	public static List<String> readCsvForBookNames(String language) {
 		BufferedReader br = null;
 		String line = "";
 		List<String> bookList = new ArrayList<String>();
 
 		try {
-			br = new BufferedReader(new FileReader(FRGeneralUtils.getPropertyVal("file.book.names")));
+			if(language.equalsIgnoreCase("en")) {
+				br = new BufferedReader(new FileReader(FRGeneralUtils.getPropertyVal("file.book.names")));				
+			}
+			else {
+				br = new BufferedReader(new FileReader(FRGeneralUtils.getPropertyVal("file.book.names.de")));
+			}
 			br.readLine();
 			while ((line = br.readLine()) != null) {
 					bookList.add(line);
