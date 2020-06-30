@@ -267,7 +267,7 @@ public interface FRConstants {
 
 	public static final double SIMILARITY_CUTOFF = 0.70;
 	
-	public static final int FEATURE_NUMBER = 35;
+	public static final int FEATURE_NUMBER = 41;
 	public static final int FEATURE_NUMBER_GLOBAL = 3;
 	public static final double FEATURE_WEIGHT_MORE = 0.85;
 	public static final double FEATURE_WEIGHT_LESS = 0.10;
@@ -288,7 +288,7 @@ public interface FRConstants {
 	public static final double DATA_DISTRIB_40_PERCENT  = 0.4;
 	public static final double DATA_DISTRIB_DIFFER_CUTOFF  = 0.01;
 	
-	public static final int TOP_K_RESULTS = 10;
+	public static final int TOP_K_RESULTS = 6;
 
 	/* feature related */
 	public static final int LEAVE_LAST_K_ELEMENTS_OF_FEATURE = 3; //exclude 2 global elements (TTR, NUM_Chars, Protagonist) from
