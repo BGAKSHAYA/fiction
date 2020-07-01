@@ -263,17 +263,20 @@ public class FictionRetrievalSearch {
 		return bookFeatureMap;
 	}
 	
-	public static TopKResults pickNRandom(int topK, String language) {
+	public static TopKResults pickNRandom(String querybook, int topK, String language) {
 		List<String> bookList = FRFileOperationUtils.readCsvForBookNames(language);
+		int bookIndex = bookList.indexOf(querybook);
 		SortedMap<Double, String> results = new TreeMap<Double, String>();
 
-		List<String> copy = new LinkedList<String>(bookList);
-		Collections.shuffle(copy);
-		
-		int i = 1;
-		for (String book : copy.subList(0, topK)) {
-			results.put(new Double(i), book);
-			i++;
+		for(int i=0; i<topK; i++) {
+			int findIndex = bookIndex+i+3;
+			if((bookList.size() - 1) > findIndex) {			
+				results.put(new Double(i), bookList.get(bookIndex+i+3));			
+			}
+			else {
+				results.put(new Double(i), bookList.get(bookIndex-10));				
+			}
+
 		}
 		TopKResults topKResults = new TopKResults();
 		topKResults.setResults_topK(results);

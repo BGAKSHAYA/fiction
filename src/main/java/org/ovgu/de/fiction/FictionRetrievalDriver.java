@@ -49,7 +49,7 @@ public class FictionRetrievalDriver extends SpringBootServletInitializer{
 			if (systemName.equals(FRConstants.BAG_OF_WORDS)) {
 				topKResults = FictionRetrievalSearch.pickFromBOWModel(bookID, FRConstants.TOP_K_RESULTS, language);
 			} else if (systemName.equals(FRConstants.RANDOM)) {
-				topKResults = FictionRetrievalSearch.pickNRandom(FRConstants.TOP_K_RESULTS, language);
+				topKResults = FictionRetrievalSearch.pickNRandom(bookID, FRConstants.TOP_K_RESULTS, language);
 			} else {
 				topKResults = FictionRetrievalSearch.findRelevantBooks(bookID,
 						FRGeneralUtils.getPropertyVal("file.feature"), FRConstants.SIMI_PENALISE_BY_CHUNK_NUMS,
@@ -60,7 +60,7 @@ public class FictionRetrievalDriver extends SpringBootServletInitializer{
 			if (systemName.equals(FRConstants.BAG_OF_WORDS)) {
 				topKResults = FictionRetrievalSearch.pickFromBOWModel(bookID, FRConstants.TOP_K_RESULTS, language);
 			} else if (systemName.equals(FRConstants.RANDOM)) {
-				topKResults = FictionRetrievalSearch.pickNRandom(FRConstants.TOP_K_RESULTS, language);
+				topKResults = FictionRetrievalSearch.pickNRandom(bookID, FRConstants.TOP_K_RESULTS, language);
 			} else {
 				topKResults = FictionRetrievalSearch.findRelevantBooks(bookID,
 						FRGeneralUtils.getPropertyVal("file.feature.de"), FRConstants.SIMI_PENALISE_BY_CHUNK_NUMS,
